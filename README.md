@@ -4,7 +4,10 @@ CRSF-Multiswitch mit 8 Schaltkanaelen auf einem Waveshare ESP32-S3-Zero.
 
 Gleiche Funktion wie die C3-Variante, aber mit dem ESP32-S3-Zero und einem dritten UART. Das PCB wurde vom C3-Layout uebernommen, nur die Leitungen am ESP32 muessen neu geroutet werden.
 
-Ausfuehrliche Projektbeschreibung: [docs/Projektbeschreibung.docx](docs/Projektbeschreibung.docx)
+Dokumente:
+- [docs/Projektbeschreibung.docx](docs/Projektbeschreibung.docx): Projektbeschreibung
+- [docs/Hardware-Beschreibung_C3_S3.docx](docs/Hardware-Beschreibung_C3_S3.docx): Hardware-Beschreibung C3 und S3 (Stecker, Kanalzuordnung, Stueckliste, Dimensionierung)
+- [docs/Firmware-Spezifikation.md](docs/Firmware-Spezifikation.md) (auch als DOCX): Firmware-Spezifikation (Basis V3, Router fuer Modulketten, BOOT-Taster, Status-LED)
 
 ## Merkmale
 - 8 Schaltkanaele ueber ULN2803A, Kontroll-LED je Kanal
@@ -49,7 +52,7 @@ Board: Waveshare ESP32-S3-Zero
 ## Ordner
 - `hardware/`: KiCad-Projekt (Schaltplan, PCB, PDF, eigene Footprints, fp-lib-table). Entwurfsnotizen in [hardware/README-hardware.md](hardware/README-hardware.md).
 - `firmware/`: Firmware, noch nicht begonnen.
-- `docs/`: Projektbeschreibung als DOCX.
+- `docs/`: Projektbeschreibung, Hardware-Beschreibung und Firmware-Spezifikation.
 
 ## Stand
 - Hardware: Schaltplan fertig, PCB uebernommen. 20 Verbindungen an U1 sind noch nicht geroutet, J6 nur vorlaeufig platziert.
