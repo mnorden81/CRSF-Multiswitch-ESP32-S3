@@ -110,6 +110,7 @@ uint16_t get_altitude_packed (int32_t altitude_dm){
 
 // Extract channels from CRSF buffer
 void CRSF::updateChannels() {
+      lastRcFrameMs = millis(); // v4.00: fuer LED-Muster "kein RC-Link"
       channels[0] = ((crfs_buffer[3] | crfs_buffer[4] << 8) & CHANNEL_MASK);
       channels[1] = ((crfs_buffer[4] >> 3 | crfs_buffer[5] << 5) & CHANNEL_MASK);
       channels[2] = ((crfs_buffer[5] >> 6 | crfs_buffer[6] << 2 | crfs_buffer[7] << 10) & CHANNEL_MASK);

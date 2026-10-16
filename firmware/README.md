@@ -10,7 +10,8 @@ Arduino-Sketch in `CRSF_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis 
 - Partition Scheme: eines mit OTA, z.B. "Default 4MB with spiffs"
 
 ## Stand
-- Schritt 1 (dieser Stand): Pins und UART A fuer C3/S3, CRSF oder SBUS auf UART A, C3-Ausgang 7/8 digital, Status-LED auf dem S3.
-- Schritt 2: BOOT-Taster fuer den WLAN-AP, LED-Muster.
+- Schritt 1 (dieser Stand): Pins und UART A fuer C3/S3, CRSF oder SBUS auf UART A, C3-Ausgang 7/8 digital.
+- LED-Muster (Spezifikation Kapitel 6, nur S3): aus = kein Signal, 500 ms blinken = OK, schnell 100 ms = Failsafe/kein RC-Link, Doppelblitz = Konfigurationsfehler (ab Schritt 3).
+- Schritt 2: BOOT-Taster fuer den WLAN-AP.
 - Schritt 3: CRSF-Router fuer Modulketten (UART B/C).
 - Schritt 4: Abnahmetest.

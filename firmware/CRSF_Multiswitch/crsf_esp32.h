@@ -92,6 +92,9 @@ public:
     uint32_t getDevicePings() const { return devicePingsRx; }
     uint32_t getParamReads()  const { return paramReadsRx; }
     uint32_t getParamWrites() const { return paramWritesRx; }
+    // v4.00: Zeitpunkt (millis) des letzten RC_CHANNELS_PACKED-Frames,
+    // 0 = noch keiner. Basis fuer das LED-Muster "Frames da, aber kein RC-Link".
+    unsigned long getLastRcFrameMs() const { return lastRcFrameMs; }
 
 private:
     void updateChannels();
@@ -124,6 +127,7 @@ private:
     uint32_t crcErrorsRx   = 0; // Frames mit CRC-Fehler
     uint32_t devicePingsRx = 0; // empfangene DEVICE_PING (an uns/Broadcast)
     uint32_t paramReadsRx  = 0; // empfangene PARAMETER_READ (an uns/Broadcast)
+    unsigned long lastRcFrameMs = 0; // v4.00, siehe getLastRcFrameMs()
     uint32_t paramWritesRx = 0; // empfangene PARAMETER_WRITE (an uns/Broadcast)
 };
 

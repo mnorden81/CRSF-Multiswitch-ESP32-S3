@@ -46,8 +46,17 @@
    - C3: nur 6 LEDC-Kanaele, Ausgang 7/8 schalten digital (an ab 50 % Duty,
      Blinken weiter per Software). Neue Hilfsfunktion outWrite(), nur aus
      Output() aufgerufen.
-   - Status-LED: S3 WS2812 (IO21) gruen mit V3-Muster (aus = kein Signal,
-     500 ms blinken = verbunden), C3 ohne Status-LED.
+   - Status-LED (Spezifikation Kapitel 6): S3 WS2812 (IO21) gruen, C3 ohne
+     Status-LED (Code laeuft, Ausgabe entfaellt). Muster:
+       aus                   = kein gueltiger Frame (> 2 s)
+       500 ms an / 500 ms aus = Verbindung OK
+       schnell (100 ms)      = Frames da, aber Failsafe bzw. kein RC-Link
+                               (CRSF: > 1 s kein Kanal-Frame oder Uplink-LQ 0,
+                               SBUS: Failsafe-Flag)
+       Doppelblitz           = Konfigurationsfehler (g_ledConfigError, wird
+                               ab Schritt 3 bei doppelter Adresse gesetzt)
+     Nur Anzeige: BUS_OK, Failsafe der Ausgaenge und WLAN-Auto-Failsafe
+     verhalten sich wie in V3.
    - NICHT verändert: Ausgangslogik (Konfig 1/2/3, MKan, Blink, PWM, MWprop),
      CRSF- und SBUS-Auswertung, Lua-Parameterbaum, NVS-Schluessel,
      Web-UI-Funktionen.
@@ -471,8 +480,26 @@ static void nvsReset() {
 void storageSave() { nvsFlushPending(); }
 
 // ======== Status-LED ============================================
-static unsigned long ledPrevMs = 0;
-static bool          ledState  = false;
+// v4.00: Muster nach Firmware-Spezifikation Kapitel 6, nicht blockierend.
+// Reine Anzeige - aendert weder BUS_OK noch das Ausgangsverhalten.
+enum LedMode : uint8_t { LED_OFF, LED_SLOW, LED_FAST, LED_DOUBLE };
+
+// Konfigurationsfehler (Doppelblitz). Wird ab Schritt 3 vom Router bei
+// doppelter Moduladresse gesetzt; bis dahin immer false.
+bool g_ledConfigError = false;
+
+// CRSF: so lange ohne RC-Kanal-Frame gilt der RC-Link als weg, obwohl noch
+// andere Frames (Ping, Parameter, Modulkette) ankommen.
+static constexpr unsigned long RC_LINK_TIMEOUT_MS = 1000;
+// SBUS: ohne Frame so lange gilt "kein Signal" (wie CRSF_TIMEOUT_MS).
+static constexpr unsigned long SBUS_LED_TIMEOUT_MS = 2000;
+static unsigned long lastSbusFrameMs = 0;
+
+extern LinkStatistics linkStats;   // crsf_esp32.cpp
+
+static LedMode       ledMode      = LED_OFF;
+static unsigned long ledModeStart = 0;
+static bool          ledState     = false;
 
 // v4.00: Ausgabe ueber statusLedWrite() - S3 WS2812 gruen, C3 ohne LED.
 static void statusLedWrite(bool on) {
@@ -483,17 +510,37 @@ static void statusLedWrite(bool on) {
 #endif
 }
 
+static LedMode currentLedMode(unsigned long now) {
+    if (g_ledConfigError) return LED_DOUBLE;
+    if (RC_System_boot == 4) {
+        if (!BUS_OK) return LED_OFF;
+        unsigned long rc = crsf.getLastRcFrameMs();
+        bool noRc   = (rc == 0) || (now - rc > RC_LINK_TIMEOUT_MS);
+        bool lqNull = linkStats.lastUpdate != 0 &&
+                      now - linkStats.lastUpdate <= CRSF_TIMEOUT_MS &&
+                      linkStats.uplinkLQ == 0;
+        return (noRc || lqNull) ? LED_FAST : LED_SLOW;
+    }
+    // SBUS: BUS_OK ist im Failsafe false, deshalb eigene Frame-Zeit
+    if (lastSbusFrameMs == 0 || now - lastSbusFrameMs > SBUS_LED_TIMEOUT_MS)
+        return LED_OFF;
+    return sbus_data.failsafe ? LED_FAST : LED_SLOW;
+}
+
 static void updateLed() {
-    if (!BUS_OK) {
-        if (ledState) { ledState = false; statusLedWrite(false); }
-        return;
-    }
     unsigned long now = millis();
-    if (now - ledPrevMs >= 500) {
-        ledPrevMs = now;
-        ledState  = !ledState;
-        statusLedWrite(ledState);
+    LedMode m = currentLedMode(now);
+    if (m != ledMode) { ledMode = m; ledModeStart = now; }
+    unsigned long t = now - ledModeStart;
+    bool on;
+    switch (ledMode) {
+        case LED_SLOW:   on = (t % 1000) < 500; break;           // 500/500 ms
+        case LED_FAST:   on = (t % 200)  < 100; break;           // 100/100 ms
+        case LED_DOUBLE: { unsigned long p = t % 1000;           // 2x 100 ms, Pause
+                           on = p < 100 || (p >= 250 && p < 350); } break;
+        default:         on = false; break;
     }
+    if (on != ledState) { ledState = on; statusLedWrite(on); }
 }
 
 // ======== CRSF-Failsafe =========================================
@@ -1179,6 +1226,7 @@ void loop() {
     } else {
         if (sbus_rx.Read()) {
             sbus_data = sbus_rx.data();
+            lastSbusFrameMs = millis();   // v4.00: fuer die Status-LED
 
             if (sbus_data.failsafe) {
                 BUS_OK = false;
