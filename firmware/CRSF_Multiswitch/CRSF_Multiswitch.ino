@@ -1,5 +1,5 @@
 /*
-    CRSF-Multiswitch  v4.00  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
+    CRSF-Multiswitch  v4.01  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
    v4.00 abgezweigt von ESP32-MultiSwitch v3.12 (Repo ESP32-Multiswitch-
    CRSF-bidirektional, MultiSwitch_ESP32_V3). Gleicher Quellcode fuer beide
    Platinen, Board-Auswahl in board_config.h.
@@ -32,6 +32,32 @@
    4 = CRSF           (ExpressLRS / TBS CrossFire, bidirektional)
  Lua-Konfiguration und (ab Schritt 3) Modulkette gibt es nur bei CRSF.
 
+ ÄNDERUNGEN v4.01 (Schritt 2 und 3 der Firmware-Spezifikation):
+   - NEU: BOOT-Taster (C3 IO9, S3 IO0) lang druecken (>= 3 s) schaltet den
+     WLAN-AP um (an <-> aus), ohne Neustart und ohne NVS-Aenderung. Wird
+     erst ausgewertet, nachdem der Taster nach dem Booten einmal losgelassen
+     war (Strapping-Pin, siehe bootButtonCheck()).
+   - NEU: CRSF-Router fuer Modulketten (nur bei RC_System 4 = CRSF):
+     UART B (C3/S3) und UART C (nur S3) fuehren zum naechsten Modul.
+     A -> B/C: alle gueltigen Frames ausser Extended-Frames an die eigene
+     Adresse; B/C -> A: alle gueltigen Frames; nie B <-> C. Frames werden
+     ganz und unveraendert weitergegeben (CRC geprueft), je Port eine
+     Warteschlange mit 8 Frames, bei Ueberlauf werden zuerst alte
+     RC-Kanal-Frames verworfen. Jedes Modul antwortet wie bisher in seinem
+     Zeitschlitz und ist damit ueber Lua einzeln erreichbar (Geraetename
+     "<Name>@<Adresse>").
+   - NEU: Doppelte Modul-Adresse wird erkannt (Device-Info mit eigener
+     Adresse kommt von B/C zurueck): Doppelblitz der Status-LED (S3) und
+     Warnung im Debug-Tab der Web-UI. Gilt bis zum Neustart.
+   - FIX: CRSF-Parser auf UART A behaelt seinen Zustand zwischen zwei
+     Loop-Durchlaeufen; vorher ging ein Frame verloren, der ueber zwei
+     Durchlaeufe verteilt ankam.
+   - UART-Puffer fuer CRSF auf 1024 Byte Empfang / 512 Byte Senden
+     vergroessert.
+   - Debug-Tab: Zaehler fuer weitergeleitete und verworfene Frames.
+   - NICHT veraendert: Ausgangslogik, Lua-Parameterbaum, NVS-Schluessel,
+     SBUS-Betrieb (dort kein Router).
+
  ÄNDERUNGEN v4.00 (neue Platinen C3/S3, Schritt 1 der Firmware-Spezifikation):
    - NEU: board_config.h mit Pins, UARTs, BOOT-Taster und Status-LED fuer
      ESP32-C3 SuperMini (BOARD_C3) und ESP32-S3-Zero (BOARD_S3), automatisch
@@ -53,8 +79,8 @@
        schnell (100 ms)      = Frames da, aber Failsafe bzw. kein RC-Link
                                (CRSF: > 1 s kein Kanal-Frame oder Uplink-LQ 0,
                                SBUS: Failsafe-Flag)
-       Doppelblitz           = Konfigurationsfehler (g_ledConfigError, wird
-                               ab Schritt 3 bei doppelter Adresse gesetzt)
+       Doppelblitz           = Konfigurationsfehler (g_ledConfigError,
+                               ab v4.01 bei doppelter Adresse gesetzt)
      Nur Anzeige: BUS_OK, Failsafe der Ausgaenge und WLAN-Auto-Failsafe
      verhalten sich wie in V3.
    - NICHT verändert: Ausgangslogik (Konfig 1/2/3, MKan, Blink, PWM, MWprop),
@@ -191,7 +217,7 @@
 #include "crsf_esp32.h"
 #include "blink_presets.h"
 
-constexpr uint16_t Version = 400; // 4.00 - CRSF Parameter Version Number
+constexpr uint16_t Version = 401; // 4.01 - CRSF Parameter Version Number
 
 // ======== SBUS-Schwellen (benannte Konstanten) ==================
 static constexpr uint16_t SBUS_LOW_THRESHOLD  =  800;
@@ -486,8 +512,8 @@ void storageSave() { nvsFlushPending(); }
 // prototypen vor eigene Typen, ein enum als Rueckgabetyp baut dann nicht.
 enum LedMode : uint8_t { LED_OFF, LED_SLOW, LED_FAST, LED_DOUBLE };
 
-// Konfigurationsfehler (Doppelblitz). Wird ab Schritt 3 vom Router bei
-// doppelter Moduladresse gesetzt; bis dahin immer false.
+// Konfigurationsfehler (Doppelblitz). v4.01: gesetzt, wenn der Router eine
+// doppelte Moduladresse erkennt (siehe loop()).
 bool g_ledConfigError = false;
 
 // CRSF: so lange ohne RC-Kanal-Frame gilt der RC-Link als weg, obwohl noch
@@ -781,7 +807,7 @@ static void crsfSendParam(uint8_t idx) {
         crsf.send_param_response_CRSF_FOLDER(0, 0, "",
             {1,2,5,14,23,32,41,50,59,68,77});
     } else if (idx == 1) {
-        crsf.send_param_response_CRSF_INFO(1, 0, "Version", "v4.00 " BOARD_NAME);
+        crsf.send_param_response_CRSF_INFO(1, 0, "Version", "v4.01 " BOARD_NAME);
     } else if (idx == 2) {
         crsf.send_param_response_CRSF_FOLDER(2, 0, "Global", {3,4});
     } else if (idx == 3) {
@@ -1005,6 +1031,34 @@ static void wifiFailsafeCheck() {
     }
 }
 
+// ======== BOOT-Taster (NEU v4.01) ===============================
+// Langer Druck (>= 3 s) schaltet den WLAN-AP um, wirkt sofort und ohne
+// nvsSave() - wie der Sofort-Schalter in der Web-UI. Der Taster ist ein
+// Strapping-Pin (beim Reset gedrueckt = Download-Modus). Deshalb wird er
+// erst ausgewertet, nachdem er nach dem Booten einmal losgelassen war.
+static constexpr unsigned long BOOT_LONG_PRESS_MS = 3000;
+static void bootButtonCheck() {
+    static bool          armed   = false;
+    static bool          pressed = false;
+    static bool          fired   = false;
+    static unsigned long downMs  = 0;
+
+    bool down = (digitalRead(BOOT_PIN) == LOW);
+    if (!armed) { if (!down) armed = true; return; }
+    if (!down) { pressed = false; return; }
+    unsigned long now = millis();
+    if (!pressed) { pressed = true; fired = false; downMs = now; return; }
+    if (fired || now - downMs < BOOT_LONG_PRESS_MS) return;
+    fired = true;   // nur einmal je Druck
+    if (webui_isApActive()) {
+        Serial.println("BOOT-Taster: WLAN-AP aus");
+        webui_disableAP();
+    } else {
+        Serial.println("BOOT-Taster: WLAN-AP ein");
+        webui_enableAP();
+    }
+}
+
 // ======== PWM-Duty aus einem PWM-Wert ermitteln (NEU v0.14) ======
 // Unterstützt drei Quellen:
 //   pv < 200                → Festwert (direkt als uint8_t)
@@ -1135,6 +1189,16 @@ void setup() {
         Serial.printf("CRSF gestartet (Board %s, RX=%d, TX=%d, 420000 Bd)  Geraeteadresse 0x%02X  Slot %d\n",
                       BOARD_NAME, UART_A_RX, UART_A_TX,
                       crsfAddrFromWM(), (uint8_t)constrain(modul_adress,0,15)*2);
+        // v4.01: Router auf UART B (und C beim S3) fuer die Modulkette
+#if defined(UART_C_SERIAL)
+        crsf.init_router(&UART_B_SERIAL, UART_B_RX, UART_B_TX,
+                         &UART_C_SERIAL, UART_C_RX, UART_C_TX);
+        Serial.printf("Router aktiv: UART B RX=%d TX=%d, UART C RX=%d TX=%d\n",
+                      UART_B_RX, UART_B_TX, UART_C_RX, UART_C_TX);
+#else
+        crsf.init_router(&UART_B_SERIAL, UART_B_RX, UART_B_TX, nullptr, 0, 0);
+        Serial.printf("Router aktiv: UART B RX=%d TX=%d\n", UART_B_RX, UART_B_TX);
+#endif
     } else {
         sbus_rx.Begin();   // v4.00: ebenfalls UART A
         Serial.printf("SBUS gestartet (Board %s, RX=%d, RC-System=%d)\n",
@@ -1152,6 +1216,7 @@ void setup() {
     }
 
     statusLedWrite(false);
+    pinMode(BOOT_PIN, INPUT_PULLUP);   // v4.01: BOOT-Taster fuer den WLAN-AP
 
     webui_init();
 
@@ -1165,9 +1230,12 @@ void loop() {
 
     nvsProcessPending();
     wifiFailsafeCheck(); // NEU v2.00 - unbedingt am Loop-Anfang, damit auch der SBUS-Failsafe-Fruehausstieg unten ihn nicht ueberspringt
+    bootButtonCheck();   // NEU v4.01 - aus demselben Grund am Loop-Anfang
 
     if (RC_System_boot == 4) {
         crsf.read_packets(0);
+        crsf.route_packets();                         // v4.01: Modulkette B/C
+        if (crsf.isDuplicateAddress()) g_ledConfigError = true;
         for (int i = 0; i < 16; i++)
             channel_output[i] = crsf.get_crfs_channels(i);
 

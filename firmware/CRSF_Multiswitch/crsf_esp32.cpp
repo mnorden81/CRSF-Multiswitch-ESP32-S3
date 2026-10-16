@@ -216,7 +216,12 @@ void CRSF::set_crsf_channel(uint8_t ch, uint16_t value) {
 void CRSF::init_crsf(HardwareSerial *serialPort, uint8_t rxPin, uint8_t txPin) {
     // v4.00: Rueckfall auf Serial1 statt Serial2 (der ESP32-C3 hat kein Serial2)
     serial_data = serialPort ? serialPort : &Serial1;
+  // v4.01: groessere Puffer (vor begin()), damit weitergeleitete Frames
+  // nicht blockieren und bei kurzen Loop-Pausen (Web-UI) nichts verloren geht
+  serial_data->setRxBufferSize(CRSF_UART_RX_BUF);
+  serial_data->setTxBufferSize(CRSF_UART_TX_BUF);
   serial_data->begin(BAUD_RATE, SERIAL_8N1, rxPin, txPin);
+  portA_.ser = serial_data;
 #if DEBUG_CRSF
   Serial.println("Initializing CRSF...");
 #endif  
@@ -358,7 +363,12 @@ void CRSF::send_packets(byte* buffer, size_t length, uint8_t debug) {
 
 // Read CRSF packets from serial port
 void CRSF::read_packets(uint8_t debug) {
-    uint8_t data, length, byte_index = 0;
+    // v4.01 FIX: Parser-Zustand als Member (rxIdxA/rxLenA). Vorher lokal und
+    // bei jedem Aufruf auf 0 gesetzt - ein Frame, der ueber zwei Loop-
+    // Durchlaeufe verteilt ankam, ging dadurch verloren.
+    uint8_t data;
+    uint8_t& length     = rxLenA;
+    uint8_t& byte_index = rxIdxA;
 
     while (serial_data->available() > 0) {
         data = serial_data->read();
@@ -391,6 +401,7 @@ void CRSF::read_packets(uint8_t debug) {
             crfs_buffer[byte_index++] = data;
             if (data == crc8(&crfs_buffer[2], length - 1)) {
                 validFramesRx++; // v2.00: "gueltiger Frame da" - Basis fuer BUS_OK in der .ino
+                routeFromA(crfs_buffer, length + 2);   // v4.01: vor crsfDataReceive (Puffer unveraendert)
                 crsfDataReceive();
                 if (debug) {
                     Serial.print("RX-Buffer: ");
@@ -428,6 +439,134 @@ void CRSF::read_packets(uint8_t debug) {
             byte_index = 0;
         }
     }
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  CRSF-Router (NEU v4.01) - Spezifikation Kapitel 4
+//  Store-and-Forward: nur vollstaendige Frames mit gueltiger CRC werden
+//  unveraendert weitergegeben.
+//    A -> B und C : alles ausser Extended-Frames an die eigene Adresse
+//    B/C -> A     : alles
+//    B <-> C      : nie
+//  Frames ohne Extended-Header (Typ < 0x28, z.B. RC-Kanaele 0x16 und
+//  Link-Statistik 0x14) haben keine Zieladresse und gehen immer weiter.
+// ════════════════════════════════════════════════════════════════════
+void CRSF::init_router(HardwareSerial* portB, uint8_t bRx, uint8_t bTx,
+                       HardwareSerial* portC, uint8_t cRx, uint8_t cTx) {
+    HardwareSerial* s[2]  = {portB, portC};
+    uint8_t         rx[2] = {bRx, cRx};
+    uint8_t         tx[2] = {bTx, cTx};
+    CrsfPort*       p[2]  = {&portB_, &portC_};
+    for (int i = 0; i < 2; i++) {
+        if (!s[i]) continue;
+        s[i]->setRxBufferSize(CRSF_UART_RX_BUF);
+        s[i]->setTxBufferSize(CRSF_UART_TX_BUF);
+        s[i]->begin(BAUD_RATE, SERIAL_8N1, rx[i], tx[i]);
+        p[i]->ser = s[i];
+    }
+    routerActive = (portB_.ser || portC_.ser);
+}
+
+bool CRSF::isSyncByte(uint8_t b) {
+    return b == CRSF_SYNC_byte || b == CRSF_ADDRESS_RADIO_TRANSMITTER ||
+           b == CRSF_ADDRESS_CRSF_TRANSMITTER || b == CRSF_ADDRESS_ELRS_LUA ||
+           b == CRSF_ADDRESS_CRSF_RECEIVER || b == CRSF_ADDRESS_BROADCAST;
+}
+
+// Gleicher Ablauf wie read_packets() fuer UART A
+bool CRSF::parseByte(CrsfPort& p, uint8_t data) {
+    if (p.rxIdx == 0) {
+        if (isSyncByte(data)) p.rx[p.rxIdx++] = data;
+        return false;
+    }
+    if (p.rxIdx == 1) {
+        if (data < 2 || data > (CRSF_PACKET_SIZE - 2)) { p.rxIdx = 0; return false; }
+        p.rxLen = data;
+        p.rx[p.rxIdx++] = data;
+        return false;
+    }
+    p.rx[p.rxIdx++] = data;
+    if (p.rxIdx < p.rxLen + 2) return false;
+    p.rxIdx = 0;
+    if (data == crc8(&p.rx[2], p.rxLen - 1)) return true;
+    downCrcErrors++;
+    return false;
+}
+
+void CRSF::routeFromA(const uint8_t* f, uint8_t n) {
+    if (!routerActive) return;
+    uint8_t type = f[2];
+    // Extended-Frame an die eigene Adresse: nur intern. Ausnahme 0xC8
+    // (Adresse 8 = Flight-Controller/Sync), die gilt auf dem Bus als Broadcast.
+    if (type >= 0x28 && n > 4 && f[3] == deviceAddress &&
+        deviceAddress != CRSF_SYNC_byte) return;
+    if (portB_.ser) enqueue(portB_, f, n);
+    if (portC_.ser) enqueue(portC_, f, n);
+    fwdDown++;
+}
+
+void CRSF::routeFromDown(CrsfPort& p) {
+    while (p.ser->available() > 0) {
+        if (!parseByte(p, (uint8_t)p.ser->read())) continue;
+        uint8_t n = p.rxLen + 2;
+        // Doppelte Adresse: ein Modul weiter hinten meldet unsere Adresse
+        if (p.rx[2] == CRSF_FRAMETYPE_DEVICE_INFO && n > 5 && p.rx[4] == deviceAddress)
+            duplicateAddress = true;
+        enqueue(portA_, p.rx, n);
+        fwdUp++;
+    }
+}
+
+// Ganzen Frame senden oder einreihen - nie einen Teil-Frame schreiben.
+void CRSF::enqueue(CrsfPort& p, const uint8_t* f, uint8_t n) {
+    if (p.qCount == 0 && p.ser->availableForWrite() >= n) {
+        p.ser->write(f, n);
+        return;
+    }
+    if (p.qCount >= CRSF_ROUTER_QUEUE) {
+        // Voll: aeltesten RC-Kanal-Frame verwerfen (Aktualitaet vor
+        // Vollstaendigkeit). Ohne RC-Frame in der Schlange wird ein neuer
+        // RC-Frame verworfen, alle anderen Frames verdraengen den aeltesten.
+        int victim = -1;
+        for (uint8_t i = 0; i < p.qCount; i++) {
+            uint8_t k = (p.qHead + i) % CRSF_ROUTER_QUEUE;
+            if (p.q[k][2] == CRSF_FRAMETYPE_RC_CHANNELS_PACKED) { victim = i; break; }
+        }
+        fwdDropped++;
+        if (victim < 0) {
+            if (f[2] == CRSF_FRAMETYPE_RC_CHANNELS_PACKED) return;
+            victim = 0;
+        }
+        // Eintrag 'victim' entfernen, Rest nachruecken
+        for (uint8_t i = victim; i + 1 < p.qCount; i++) {
+            uint8_t a = (p.qHead + i) % CRSF_ROUTER_QUEUE;
+            uint8_t b = (p.qHead + i + 1) % CRSF_ROUTER_QUEUE;
+            memcpy(p.q[a], p.q[b], p.qLen[b]);
+            p.qLen[a] = p.qLen[b];
+        }
+        p.qCount--;
+    }
+    uint8_t k = (p.qHead + p.qCount) % CRSF_ROUTER_QUEUE;
+    memcpy(p.q[k], f, n);
+    p.qLen[k] = n;
+    p.qCount++;
+}
+
+void CRSF::serviceQueue(CrsfPort& p) {
+    while (p.qCount > 0 && p.ser->availableForWrite() >= p.qLen[p.qHead]) {
+        p.ser->write(p.q[p.qHead], p.qLen[p.qHead]);
+        p.qHead = (p.qHead + 1) % CRSF_ROUTER_QUEUE;
+        p.qCount--;
+    }
+}
+
+void CRSF::route_packets() {
+    if (!routerActive || !portA_.ser) return;
+    if (portB_.ser) routeFromDown(portB_);
+    if (portC_.ser) routeFromDown(portC_);
+    serviceQueue(portA_);
+    if (portB_.ser) serviceQueue(portB_);
+    if (portC_.ser) serviceQueue(portC_);
 }
 
 void CRSF::send_rc_channels_packed() {

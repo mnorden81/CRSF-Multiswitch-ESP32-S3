@@ -1,5 +1,5 @@
 /*
- * webui.h  –  WiFi-Weboberfläche für CRSF-Multiswitch C3/S3  v4.00
+ * webui.h  –  WiFi-Weboberfläche für CRSF-Multiswitch C3/S3  v4.01
  * NEU V3.00: MKan-Gruppen (2 zusaetzliche, unabhaengige Kanalquellen) -
  * siehe Kommentar bei MULTISW_NUM_GROUPS in MultiSwitch_ESP32_V3.ino.
  * NEU V3.10: bis zu 3 Konfigurationen (Kanal-Quelle + Blink/PWM) pro
@@ -1019,6 +1019,10 @@ async function pollDebug(){
     ch+=`DEVICE_PING empfangen: ${c.device_pings}<br>`;
     ch+=`PARAMETER_READ empfangen: ${c.param_reads}<br>`;
     ch+=`PARAMETER_WRITE empfangen: ${c.param_writes}<br>`;
+    if(c.fwd_down!==undefined){
+      ch+=`Router A&rarr;B/C: ${c.fwd_down}, B/C&rarr;A: ${c.fwd_up}, verworfen: ${c.fwd_dropped}, CRC-Fehler B/C: ${c.down_crc}<br>`;
+      if(c.dup_addr) ch+=`<b style="color:#c00">Doppelte Modul-Adresse in der Kette erkannt!</b><br>`;
+    }
     $('crsf-diag-body').innerHTML=ch;
   } else {
     $('crsf-diag-body').innerHTML='Keine Daten';
@@ -1209,7 +1213,13 @@ static void handleStatus() {
     j += "\"crc_errors\":"   + String(crsf.getCrcErrors())   + ",";
     j += "\"device_pings\":" + String(crsf.getDevicePings()) + ",";
     j += "\"param_reads\":"  + String(crsf.getParamReads())  + ",";
-    j += "\"param_writes\":" + String(crsf.getParamWrites());
+    j += "\"param_writes\":" + String(crsf.getParamWrites()) + ",";
+    // v4.01: Router-Zaehler
+    j += "\"fwd_down\":"    + String(crsf.getFwdDown())    + ",";
+    j += "\"fwd_up\":"      + String(crsf.getFwdUp())      + ",";
+    j += "\"fwd_dropped\":" + String(crsf.getFwdDropped()) + ",";
+    j += "\"down_crc\":"    + String(crsf.getDownCrcErrors()) + ",";
+    j += "\"dup_addr\":"    + String(crsf.isDuplicateAddress() ? "true" : "false");
     j += "},";
     j += "\"wifi_ap_active\":" + String(webui_isApActive() ? "true" : "false");
 
@@ -1650,8 +1660,8 @@ void webui_init() {
     // NEU v2.02: WLAN dauerhaft an (g_wifi_always_on) uebersteuert den
     // GPIO13-Bootpin vollstaendig - siehe Kommentar bei g_wifi_always_on
     // in der .ino. Default AN, siehe Migrations-Default in nvsLoad().
-    // v4.00: WifiPin (GPIO13) entfaellt auf den C3/S3-Platinen; der
-    // BOOT-Taster zum Umschalten folgt in Schritt 2.
+    // v4.00: WifiPin (GPIO13) entfaellt auf den C3/S3-Platinen.
+    // v4.01: Umschalten zur Laufzeit per BOOT-Taster (bootButtonCheck() in der .ino).
     if (g_wifi_always_on) {
         webui_enableAP();
     }

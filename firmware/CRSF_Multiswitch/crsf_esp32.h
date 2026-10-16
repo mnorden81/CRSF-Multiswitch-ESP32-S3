@@ -10,6 +10,25 @@
 #define BAUD_RATE 420000
 #define CHANNEL_MASK 0x07FF
 
+// v4.01: CRSF-Router fuer Modulketten (Spezifikation Kapitel 4)
+#define CRSF_ROUTER_QUEUE 8      // Sendewarteschlange je Port (Frames)
+#define CRSF_UART_RX_BUF  1024   // UART-Empfangspuffer (Bytes)
+#define CRSF_UART_TX_BUF  512    // UART-Sendepuffer (Bytes)
+
+// Ein CRSF-Port des Routers: Empfangs-Parser + Sendewarteschlange.
+struct CrsfPort {
+    HardwareSerial* ser = nullptr;
+    // Parser (Zustand bleibt ueber Aufrufe erhalten)
+    uint8_t rx[CRSF_PACKET_SIZE];
+    uint8_t rxIdx = 0;
+    uint8_t rxLen = 0;
+    // Sendewarteschlange (Ringpuffer ganzer Frames)
+    uint8_t q[CRSF_ROUTER_QUEUE][CRSF_PACKET_SIZE];
+    uint8_t qLen[CRSF_ROUTER_QUEUE];
+    uint8_t qHead  = 0;
+    uint8_t qCount = 0;
+};
+
 class CRSF
 {
 public:
@@ -17,6 +36,19 @@ public:
     CRSF();
     void init_crsf(HardwareSerial *serialPort, uint8_t rxPin, uint8_t txPin);
     void read_packets(uint8_t debug);
+
+    // ── Router (NEU v4.01) ──────────────────────────────────────────────
+    // portC darf nullptr sein (C3 hat keinen UART C). Nach init_crsf() aufrufen.
+    void init_router(HardwareSerial* portB, uint8_t bRx, uint8_t bTx,
+                     HardwareSerial* portC, uint8_t cRx, uint8_t cTx);
+    // B/C lesen, nach A weiterleiten, Warteschlangen abarbeiten. Jeden Loop.
+    void route_packets();
+    uint32_t getFwdDown()    const { return fwdDown; }    // A -> B/C
+    uint32_t getFwdUp()      const { return fwdUp; }      // B/C -> A
+    uint32_t getFwdDropped() const { return fwdDropped; } // Warteschlange voll
+    uint32_t getDownCrcErrors() const { return downCrcErrors; }
+    // Device-Info mit eigener Adresse von B/C gesehen = doppelte Adresse
+    bool     isDuplicateAddress() const { return duplicateAddress; }
     void send_packets(byte* buffer, size_t length, uint8_t debug);
 
     void send_rc_channels_packed();
@@ -102,6 +134,24 @@ private:
     void updateDevice_Info();
     void print_channels();
     void crsfDataReceive();
+
+    // Router (v4.01)
+    static bool isSyncByte(uint8_t b);
+    bool parseByte(CrsfPort& p, uint8_t data);   // true = gueltiger Frame in p.rx
+    void routeFromA(const uint8_t* f, uint8_t n);
+    void routeFromDown(CrsfPort& p);
+    void enqueue(CrsfPort& p, const uint8_t* f, uint8_t n);
+    void serviceQueue(CrsfPort& p);
+    CrsfPort portA_, portB_, portC_;   // portA_ nur Sendewarteschlange
+    bool     routerActive  = false;
+    uint32_t fwdDown       = 0;
+    uint32_t fwdUp         = 0;
+    uint32_t fwdDropped    = 0;
+    uint32_t downCrcErrors = 0;
+    bool     duplicateAddress = false;
+    // Parser-Zustand UART A (v4.01: bleibt ueber Aufrufe erhalten)
+    uint8_t  rxIdxA = 0;
+    uint8_t  rxLenA = 0;
 
     bool deviceInfoReplyPending;
     bool deviceEntryReplyPending;

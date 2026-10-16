@@ -1,5 +1,5 @@
 /*
- * board_config.h  -  Pin- und Board-Konfiguration CRSF-Multiswitch v4.00
+ * board_config.h  -  Pin- und Board-Konfiguration CRSF-Multiswitch v4.01
  *
  * Gleicher Quellcode fuer beide Platinen. Das Board wird automatisch aus dem
  * in der Arduino IDE gewaehlten Chip erkannt:
