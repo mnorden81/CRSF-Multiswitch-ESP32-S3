@@ -482,6 +482,8 @@ void storageSave() { nvsFlushPending(); }
 // ======== Status-LED ============================================
 // v4.00: Muster nach Firmware-Spezifikation Kapitel 6, nicht blockierend.
 // Reine Anzeige - aendert weder BUS_OK noch das Ausgangsverhalten.
+// Rueckgabe als uint8_t: der Arduino-Prototyp-Generator setzt Funktions-
+// prototypen vor eigene Typen, ein enum als Rueckgabetyp baut dann nicht.
 enum LedMode : uint8_t { LED_OFF, LED_SLOW, LED_FAST, LED_DOUBLE };
 
 // Konfigurationsfehler (Doppelblitz). Wird ab Schritt 3 vom Router bei
@@ -497,7 +499,7 @@ static unsigned long lastSbusFrameMs = 0;
 
 extern LinkStatistics linkStats;   // crsf_esp32.cpp
 
-static LedMode       ledMode      = LED_OFF;
+static uint8_t       ledMode      = LED_OFF;
 static unsigned long ledModeStart = 0;
 static bool          ledState     = false;
 
@@ -510,7 +512,7 @@ static void statusLedWrite(bool on) {
 #endif
 }
 
-static LedMode currentLedMode(unsigned long now) {
+static uint8_t currentLedMode(unsigned long now) {
     if (g_ledConfigError) return LED_DOUBLE;
     if (RC_System_boot == 4) {
         if (!BUS_OK) return LED_OFF;
@@ -529,7 +531,7 @@ static LedMode currentLedMode(unsigned long now) {
 
 static void updateLed() {
     unsigned long now = millis();
-    LedMode m = currentLedMode(now);
+    uint8_t m = currentLedMode(now);
     if (m != ledMode) { ledMode = m; ledModeStart = now; }
     unsigned long t = now - ledModeStart;
     bool on;
