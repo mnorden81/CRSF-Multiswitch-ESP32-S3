@@ -1,0 +1,38 @@
+name: Firmware bauen
+
+on:
+  push:
+    paths: ["firmware/**", ".github/workflows/firmware.yml"]
+  pull_request:
+    paths: ["firmware/**", ".github/workflows/firmware.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: C3
+            fqbn: esp32:esp32:esp32c3:CDCOnBoot=cdc
+          - board: S3
+            fqbn: esp32:esp32:esp32s3:CDCOnBoot=cdc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: ESP32-Core und Bibliotheken installieren
+        run: |
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32@3.0.7
+          arduino-cli lib install "Bolder Flight Systems SBUS@8.1.4"
+      - name: Kompilieren (${{ matrix.board }})
+        run: |
+          arduino-cli compile --fqbn "${{ matrix.fqbn }}" --warnings default \
+            --output-dir build/${{ matrix.board }} firmware/CRSF_Multiswitch
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CRSF_Multiswitch-${{ matrix.board }}
+          path: build/${{ matrix.board }}/*.bin
