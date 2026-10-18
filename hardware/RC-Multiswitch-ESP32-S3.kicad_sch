@@ -3961,7 +3961,7 @@
 		)
 		(uuid "ff7445de-f22c-4e1d-a2c1-970517593ae8")
 	)
-	(label "UB_TX"
+	(label "UB_RX"
 		(at 93.98 111.76 0)
 		(effects
 			(font
@@ -4101,7 +4101,7 @@
 		)
 		(uuid "3446f061-7c8b-4311-be20-a652f29031c4")
 	)
-	(label "UB_RX"
+	(label "UB_TX"
 		(at 93.98 114.3 0)
 		(effects
 			(font
@@ -4481,7 +4481,7 @@
 		)
 		(uuid "b32727c6-78c1-4c4e-a88e-ee6ea10c020f")
 	)
-	(label "UC_RX"
+	(label "UC_TX"
 		(at 93.98 121.92 0)
 		(effects
 			(font
@@ -4661,7 +4661,7 @@
 		)
 		(uuid "faac9885-fc24-48b5-89f4-5036548216ff")
 	)
-	(label "UC_TX"
+	(label "UC_RX"
 		(at 93.98 119.38 0)
 		(effects
 			(font

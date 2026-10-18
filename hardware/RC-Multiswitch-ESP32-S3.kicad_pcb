@@ -1656,7 +1656,7 @@
 		(property "Reference" "J5"
 			(at 3 2.55 0)
 			(layer "F.SilkS")
-			(uuid "8fe9b6a3-62fb-4906-ac05-a0526d2d9b11")
+			(uuid "b8bfe1f5-fc4e-4ce5-9b9d-50ebb16dbd7f")
 			(effects
 				(font
 					(size 1 1)
@@ -1667,7 +1667,7 @@
 		(property "Value" "J5_UART B"
 			(at 3 7.45 0)
 			(layer "F.Fab")
-			(uuid "b92c3db9-cb4e-4fb1-9e88-cba48f4883b6")
+			(uuid "eb0bf42e-fabd-4851-8dc1-4c35ae65ecfb")
 			(effects
 				(font
 					(size 1 1)
@@ -1679,7 +1679,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "3c423a66-422b-4309-aa1e-229a6e409719")
+			(uuid "794d5fb5-ac68-49ec-89ab-ca343c102486")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1691,7 +1691,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "e3282a12-a441-4dfe-b524-5856fef7e343")
+			(uuid "3382b88f-3f95-4627-a795-acfe84ebadcb")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2298,7 +2298,7 @@
 		(property "Reference" "U1"
 			(at 0 -13.5 90)
 			(layer "F.SilkS")
-			(uuid "b1bacc3a-2e48-452c-b354-48619cc4fb4f")
+			(uuid "2f5a6769-28b8-421a-91e9-57aa0e2e126b")
 			(effects
 				(font
 					(size 1 1)
@@ -2309,7 +2309,7 @@
 		(property "Value" "ESP32-S3-Zero"
 			(at 1.28 0.23 0)
 			(layer "F.Fab")
-			(uuid "a6249791-da11-4f40-83b1-6a1b2003c9b3")
+			(uuid "b523f7d8-fe82-4fa7-8468-bb8d19f6e73c")
 			(effects
 				(font
 					(size 1 1)
@@ -2321,7 +2321,7 @@
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "99a78dec-5fbe-4402-88f5-a9cfa47b9c0d")
+			(uuid "95506c7a-05bb-4119-b6b8-2f4e35444aa8")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2333,7 +2333,7 @@
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "2246e691-b575-48dc-9c8e-3911023c0d46")
+			(uuid "a592727a-6de0-4716-ae0f-c4b3d446f257")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8296,13 +8296,13 @@
 			)
 		)
 	)
-	(gr_text "J5_UART B\n"
-		(at 130.4 46.8 0)
+	(gr_text "UART B (=C)\n"
+		(at 130.4 47.3 0)
 		(layer "F.SilkS")
 		(uuid "4649b98c-72ba-4a05-a948-da798e6fb582")
 		(effects
 			(font
-				(size 1 1)
+				(size 0.6 0.6)
 				(thickness 0.1)
 			)
 		)
@@ -8479,8 +8479,8 @@
 			)
 		)
 	)
-	(gr_text "J6_UART C"
-		(at 141.9 46.8 0)
+	(gr_text "UART C\nRX TX + -"
+		(at 141.9 47.7 0)
 		(layer "F.SilkS")
 		(uuid "e0516578-698f-4b96-99b2-34fdf7e1b60b")
 		(effects
