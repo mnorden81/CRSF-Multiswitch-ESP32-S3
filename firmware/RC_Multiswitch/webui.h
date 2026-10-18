@@ -1,5 +1,5 @@
 /*
- * webui.h  –  WiFi-Weboberfläche für CRSF-Multiswitch C3/S3  v4.01
+ * webui.h  –  WiFi-Weboberfläche für RC-Multiswitch C3/S3  v4.01
  * NEU V3.00: MKan-Gruppen (2 zusaetzliche, unabhaengige Kanalquellen) -
  * siehe Kommentar bei MULTISW_NUM_GROUPS in MultiSwitch_ESP32_V3.ino.
  * NEU V3.10: bis zu 3 Konfigurationen (Kanal-Quelle + Blink/PWM) pro

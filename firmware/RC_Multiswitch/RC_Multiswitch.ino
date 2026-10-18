@@ -1,5 +1,5 @@
 /*
-    CRSF-Multiswitch  v4.01  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
+    RC-Multiswitch  v4.01  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
    v4.00 abgezweigt von ESP32-MultiSwitch v3.12 (Repo ESP32-Multiswitch-
    CRSF-bidirektional, MultiSwitch_ESP32_V3). Gleicher Quellcode fuer beide
    Platinen, Board-Auswahl in board_config.h.
@@ -1220,7 +1220,7 @@ void setup() {
 
     webui_init();
 
-    Serial.printf("CRSF-Multiswitch %s v%d.%02d\n", BOARD_NAME, Version / 100, Version % 100);
+    Serial.printf("RC-Multiswitch %s v%d.%02d\n", BOARD_NAME, Version / 100, Version % 100);
     Serial.printf("SSID: %s\n", g_wifi_ssid);
     Serial.printf("IP:   %s\n", AP_IP_STR);
 }

@@ -1,6 +1,6 @@
-# Firmware CRSF-Multiswitch v4.01
+# Firmware RC-Multiswitch v4.01
 
-Arduino-Sketch in `CRSF_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis ist MultiSwitch_ESP32_V3 v3.12. Spezifikation: `docs/Firmware-Spezifikation.md`.
+Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis ist MultiSwitch_ESP32_V3 v3.12. Spezifikation: `docs/Firmware-Spezifikation.md`.
 
 ## Bauen mit der Arduino IDE
 - Board-Paket: esp32 von Espressif, Version 3.x (getestet im CI mit 3.0.7)

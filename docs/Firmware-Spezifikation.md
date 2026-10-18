@@ -1,4 +1,4 @@
-# CRSF-Multiswitch – Firmware-Spezifikation
+# RC-Multiswitch – Firmware-Spezifikation
 
 ESP32-C3 SuperMini und ESP32-S3-Zero · Basis V3 v3.10 · Stand 16.10.2026
 
