@@ -1,4 +1,4 @@
-# CRSF-Multiswitch-ESP32-S3 (v0.4, PCB vom C3 uebertragen)
+# RC-Multiswitch-ESP32-S3 (v0.4, PCB vom C3 uebertragen)
 Ein Multiswitch nach CRSF Multiswitch THT v1.1 mit Waveshare ESP32-S3-Zero, ULN2803A, 8 Kanaele.
 
 - Last: 12-24V (VLOAD, JST PH 2 an CN2, max. ca. 2A je Kontakt; TVS P6KE33A), max. 500mA je Kanal.

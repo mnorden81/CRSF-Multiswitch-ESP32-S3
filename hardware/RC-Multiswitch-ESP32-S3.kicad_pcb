@@ -176,7 +176,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/17644e7d-e8e4-4074-ba05-a08453f8d0ea")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 -1.236)
@@ -387,7 +387,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/94b6d2fb-337c-4026-9ec1-84856d3ea88d")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 -1.236)
@@ -598,7 +598,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/967b8edd-f76e-4a30-8a32-276417ae12e7")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -802,7 +802,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/d32f8bb2-db48-4450-a4ce-e570865f605e")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -1005,7 +1005,7 @@
 		(property ki_fp_filters "TO-???* *_Diode_* *SingleDiode* D_*")
 		(path "/f987e51f-3d2e-433b-800c-28eaafe8db39")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 1.44 0)
@@ -1263,7 +1263,7 @@
 		)
 		(path "/b068860a-f566-47de-b9e4-2a43b9f65b21")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 8.06 6.36)
@@ -1701,7 +1701,7 @@
 		)
 		(path "/9c3ec69f-26b1-482b-82e4-0f83bb0b6d97")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 8.06 6.36)
@@ -2141,7 +2141,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/cb5a20bf-2b30-4eb8-9e45-ef17a3e895cd")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -2343,7 +2343,7 @@
 		)
 		(path "/54373a87-6e2e-4d65-af8b-90041242db9c")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_rect
 			(start -4.5 -11.85)
@@ -2664,7 +2664,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/e60fc7b7-ef44-4086-bb0a-c44ce95eaf10")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 -1.37)
@@ -2868,7 +2868,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/24e96d12-380c-4898-95a4-a4ba76971dc4")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 -1.236)
@@ -3079,7 +3079,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/23bbc403-2811-4f71-a6d7-efe682924e61")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -3283,7 +3283,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/a851e50d-c428-4bee-b019-068a24b94b3e")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 -1.37)
@@ -3485,7 +3485,7 @@
 		)
 		(path "/1fbbd3b0-5397-41c6-bdda-02fbc57bd8a6")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -2.06 6.36)
@@ -3914,7 +3914,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/d5079789-3345-415b-b091-5af50e22c0fc")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 -1.37)
@@ -4118,7 +4118,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/dc83bb58-2679-4163-9b72-5bb11e30cfad")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 -1.236)
@@ -4329,7 +4329,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/c51699b0-1733-4331-acd9-9289414d6858")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 -1.37)
@@ -4533,7 +4533,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/bbee6cfe-7b10-4cae-ba6e-2de98dfb25bb")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -4737,7 +4737,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/2845df63-0e5d-48e2-aa66-3a1d7fad81b2")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -4941,7 +4941,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/773cd36a-2c97-49ef-817b-dbcfc14ba965")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 -1.37)
@@ -5145,7 +5145,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/01e8b8d3-dcd0-49f9-8b26-cf8229177282")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 -1.236)
@@ -5356,7 +5356,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/7d8c53d3-0b88-4eaa-84cf-37a9634d6e80")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 -1.236)
@@ -5565,7 +5565,7 @@
 		)
 		(path "/e65cfc7f-1092-471b-b64c-d18db5fdb7b4")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -1.38 -1.38)
@@ -5964,7 +5964,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/d95a718e-2c76-4048-9ca9-a327df6ea82a")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 -1.236)
@@ -6175,7 +6175,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/a5bd99c8-adfb-46a2-b9cd-885c58160f80")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 -1.37)
@@ -6378,7 +6378,7 @@
 		(property ki_fp_filters "DIP*W7.62mm* SOIC*7.5x11.6mm*P1.27mm*")
 		(path "/ac91add4-4154-470f-af25-5740dd4bacc0")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 1.16 -1.33)
@@ -6803,7 +6803,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/8913808b-c893-4e34-b050-f8741970bca6")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -7005,7 +7005,7 @@
 		)
 		(path "/dc14ad21-6878-4d7c-85d0-40624f09b0ca")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -2.06 6.36)
@@ -7423,7 +7423,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/a43662a5-61b9-4cac-9713-d8f38b8db6f8")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 -1.37)
@@ -7627,7 +7627,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/7f7e2a04-156e-4d93-bee5-c084c26e50f9")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 -1.37)
@@ -7831,7 +7831,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/fdb22114-dccb-476c-9897-55b45e258014")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -8035,7 +8035,7 @@
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/689d58fb-a7d5-47bb-9bde-928dac34759b")
 		(sheetname "/")
-		(sheetfile "CRSF-Multiswitch-ESP32-S3.kicad_sch")
+		(sheetfile "RC-Multiswitch-ESP32-S3.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 -1.236)

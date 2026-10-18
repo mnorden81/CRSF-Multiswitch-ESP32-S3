@@ -1,6 +1,8 @@
-# CRSF-Multiswitch-ESP32-S3
+# RC-Multiswitch-ESP32-S3
 
-CRSF-Multiswitch mit 8 Schaltkanaelen auf einem Waveshare ESP32-S3-Zero.
+RC-Multiswitch mit 8 Schaltkanaelen auf einem Waveshare ESP32-S3-Zero.
+
+Frueher `CRSF-Multiswitch-ESP32-S3`. Der neue Name ist neutral, weil der Multiswitch neben CRSF auch SBUS (UART A) als Eingang versteht.
 
 Gleiche Funktion wie die C3-Variante, aber mit dem ESP32-S3-Zero und einem dritten UART. Das PCB wurde vom C3-Layout uebernommen, die Leitungen am ESP32 sind neu verlegt (DRC steht noch aus).
 
@@ -44,7 +46,7 @@ Board: Waveshare ESP32-S3-Zero
 - Footprint ESP32-S3-Zero_THT: 2x9, 2,54 mm, Reihenabstand 15,24 mm. Vor dem Layout 1:1 am echten Board pruefen.
 
 ## Firmware (v4.01)
-- Arduino-Sketch `firmware/CRSF_Multiswitch`, gleicher Quellcode fuer C3 und S3 (Board wird automatisch erkannt). Basis: MultiSwitch_ESP32_V3 v3.12.
+- Arduino-Sketch `firmware/RC_Multiswitch`, gleicher Quellcode fuer C3 und S3 (Board wird automatisch erkannt). Basis: MultiSwitch_ESP32_V3 v3.12.
 - CRSF auf UART A, wahlweise SBUS. Modulkette ueber UART B (und UART C beim S3): jedes Modul mit eigener Adresse ist ueber Lua einzeln einstellbar.
 - BOOT-Taster 3 s: WLAN-AP ein/aus. Status-LED nur beim S3.
 - Details und Bauanleitung: [firmware/README.md](firmware/README.md).

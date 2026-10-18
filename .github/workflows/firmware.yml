@@ -31,8 +31,8 @@ jobs:
       - name: Kompilieren (${{ matrix.board }})
         run: |
           arduino-cli compile --fqbn "${{ matrix.fqbn }}" --warnings default \
-            --output-dir build/${{ matrix.board }} firmware/CRSF_Multiswitch
+            --output-dir build/${{ matrix.board }} firmware/RC_Multiswitch
       - uses: actions/upload-artifact@v4
         with:
-          name: CRSF_Multiswitch-${{ matrix.board }}
+          name: RC_Multiswitch-${{ matrix.board }}
           path: build/${{ matrix.board }}/*.bin

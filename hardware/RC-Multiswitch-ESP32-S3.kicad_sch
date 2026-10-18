@@ -5,7 +5,7 @@
 	(uuid "a6bc2266-7635-40d2-adda-868e925c491c")
 	(paper "A4")
 	(title_block
-		(title "CRSF Multiswitch ESP32-S3-Zero (ULN2803A)")
+		(title "RC Multiswitch ESP32-S3-Zero (ULN2803A)")
 		(date "2026-10-14")
 		(rev "v0.3")
 		(comment 1 "Entwurf - vor Layout/Bestellung pruefen")
@@ -4752,7 +4752,7 @@
 			(uuid "49dac5e4-479d-4a1a-8a0d-23ffd7e2b382")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "LED5")
 					(unit 1)
@@ -4816,7 +4816,7 @@
 			(uuid "e5c6652b-74ca-4d91-97d8-dd2e76902fa3")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR24")
 					(unit 1)
@@ -4880,7 +4880,7 @@
 			(uuid "f661d294-aafb-4b1a-8717-5cefb8aa1822")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR16")
 					(unit 1)
@@ -4944,7 +4944,7 @@
 			(uuid "796ec105-d880-41f9-b48b-3376871f469b")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR01")
 					(unit 1)
@@ -5008,7 +5008,7 @@
 			(uuid "b8481231-3351-49c2-b1b5-471ed0de23a1")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR19")
 					(unit 1)
@@ -5077,7 +5077,7 @@
 			(uuid "9bea14e4-b3a9-459b-aa28-6f444b46ccd7")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "LED4")
 					(unit 1)
@@ -5141,7 +5141,7 @@
 			(uuid "58d7ee1d-6706-4a07-bcf1-9f3ad8a21fb1")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR18")
 					(unit 1)
@@ -5213,7 +5213,7 @@
 			(uuid "133289de-9ec1-42ec-9e4e-b143a3575c4c")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "CN1")
 					(unit 1)
@@ -5279,7 +5279,7 @@
 			(uuid "3f814008-ce21-46ac-b112-dab1497d0948")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R15")
 					(unit 1)
@@ -5348,7 +5348,7 @@
 			(uuid "d47136c9-1795-4971-8d27-71b718c036d1")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "LED6")
 					(unit 1)
@@ -5414,7 +5414,7 @@
 			(uuid "b9aecaa3-3407-45f4-bb29-fd0dd181e043")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R11")
 					(unit 1)
@@ -5478,7 +5478,7 @@
 			(uuid "c8a79046-28eb-48db-9796-ef56e2a4ff85")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR13")
 					(unit 1)
@@ -5542,7 +5542,7 @@
 			(uuid "7dfca62e-2e79-484d-a4ee-b305bd4c431c")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#FLG05")
 					(unit 1)
@@ -5606,7 +5606,7 @@
 			(uuid "44dd7e18-6ac1-4e10-bd3e-a0d77b075751")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR11")
 					(unit 1)
@@ -5670,7 +5670,7 @@
 			(uuid "39584aa4-fd22-4754-af18-1e09557d4036")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR12")
 					(unit 1)
@@ -5781,7 +5781,7 @@
 			(uuid "427b0239-e808-44a4-8e65-411496507447")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "U1")
 					(unit 1)
@@ -5845,7 +5845,7 @@
 			(uuid "95ae70d8-b51f-44d2-9d0a-c258cca2c7ad")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR09")
 					(unit 1)
@@ -5909,7 +5909,7 @@
 			(uuid "4c9ad142-ffd8-4e53-801b-051096174f58")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR07")
 					(unit 1)
@@ -5978,7 +5978,7 @@
 			(uuid "db96bfb2-f6f4-4816-b7a3-94efa65f87d0")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "LED1")
 					(unit 1)
@@ -6042,7 +6042,7 @@
 			(uuid "13f06c34-a9d4-4585-97b6-21b951ed733a")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR17")
 					(unit 1)
@@ -6106,7 +6106,7 @@
 			(uuid "df5f3788-4f69-4eae-a03b-0d5bf4c44f32")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR14")
 					(unit 1)
@@ -6172,7 +6172,7 @@
 			(uuid "4d9f8611-c582-4f45-96ba-2be0413f5896")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R4")
 					(unit 1)
@@ -6241,7 +6241,7 @@
 			(uuid "1b74e35a-e2e5-47bb-93b6-0c5471e1e40c")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "LED2")
 					(unit 1)
@@ -6307,7 +6307,7 @@
 			(uuid "ae7d2780-3ba9-4317-84a7-2de07ea1906a")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R6")
 					(unit 1)
@@ -6371,7 +6371,7 @@
 			(uuid "bf75571a-f4d6-4228-9abc-18caadbf93d6")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR15")
 					(unit 1)
@@ -6437,7 +6437,7 @@
 			(uuid "ee3e26e2-db32-4f75-b6db-c353ef6ac784")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R9")
 					(unit 1)
@@ -6506,7 +6506,7 @@
 			(uuid "4a48f20c-03c5-49e7-b643-25c02b458eb0")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "LED7")
 					(unit 1)
@@ -6572,7 +6572,7 @@
 			(uuid "6d07419c-28a8-481f-890c-9e8a502c0f59")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R13")
 					(unit 1)
@@ -6644,7 +6644,7 @@
 			(uuid "7b7fc167-7476-4fa4-b761-ce379b794840")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "J5")
 					(unit 1)
@@ -6708,7 +6708,7 @@
 			(uuid "332a2c51-3209-4068-a929-fb0310688cc8")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR02")
 					(unit 1)
@@ -6774,7 +6774,7 @@
 			(uuid "b953b3f2-2a1c-45c1-80be-758569d12366")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R1")
 					(unit 1)
@@ -6838,7 +6838,7 @@
 			(uuid "9655909f-6a0b-4a79-acdf-6090f66e7a08")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR23")
 					(unit 1)
@@ -6904,7 +6904,7 @@
 			(uuid "58e409c5-61f7-499c-9074-b6b6dbaa3c7d")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R8")
 					(unit 1)
@@ -6970,7 +6970,7 @@
 			(uuid "1571efd0-10a2-42d7-a8fe-99ef85405a46")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R5")
 					(unit 1)
@@ -7084,7 +7084,7 @@
 			(uuid "bb2ad2d3-9c96-41fb-b2ff-1a0237fc06b8")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "U2")
 					(unit 1)
@@ -7156,7 +7156,7 @@
 			(uuid "e398c60f-97c5-4f61-bb59-26b9f13fa729")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "J6")
 					(unit 1)
@@ -7222,7 +7222,7 @@
 			(uuid "d1dc6943-3168-4f0d-b8df-204769ddf77d")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R14")
 					(unit 1)
@@ -7286,7 +7286,7 @@
 			(uuid "d9ca5954-5151-4f88-8c01-5aca1bc4b2d8")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR20")
 					(unit 1)
@@ -7350,7 +7350,7 @@
 			(uuid "6cecb451-c6d1-4319-81b3-7780354ce148")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR04")
 					(unit 1)
@@ -7416,7 +7416,7 @@
 			(uuid "253f4ac0-a5f8-43b9-8ed2-9ba2fc274590")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R7")
 					(unit 1)
@@ -7480,7 +7480,7 @@
 			(uuid "d4797d4c-37e2-4a40-9e13-6d1693ce0233")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#FLG08")
 					(unit 1)
@@ -7546,7 +7546,7 @@
 			(uuid "ea745d83-e9fc-4753-996f-a1056a462f11")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R16")
 					(unit 1)
@@ -7610,7 +7610,7 @@
 			(uuid "358f4980-a203-49be-8d8a-bc17623862a9")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR22")
 					(unit 1)
@@ -7676,7 +7676,7 @@
 			(uuid "cbc9f5f4-0fc8-48f0-807e-3896afbe2f24")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R12")
 					(unit 1)
@@ -7742,7 +7742,7 @@
 			(uuid "3dbc3b79-1dd1-4d88-bd54-d8860ebee747")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R2")
 					(unit 1)
@@ -7811,7 +7811,7 @@
 			(uuid "4d9f94db-72f2-4c5d-9c03-f0652cbcaac4")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "LED3")
 					(unit 1)
@@ -7877,7 +7877,7 @@
 			(uuid "3f068102-a287-4426-91e6-f71bd3596706")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "CN2")
 					(unit 1)
@@ -7946,7 +7946,7 @@
 			(uuid "a2a8640a-3d9c-4ecf-aec1-5e346a168bd3")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "LED8")
 					(unit 1)
@@ -8012,7 +8012,7 @@
 			(uuid "fe895750-a14a-4e8e-8c8d-0d5af278ef2d")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R3")
 					(unit 1)
@@ -8120,7 +8120,7 @@
 			(uuid "4da959db-5da1-40f4-be73-7502816751cf")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "J1")
 					(unit 1)
@@ -8184,7 +8184,7 @@
 			(uuid "a8d3fb02-aa62-40c4-a0d4-db8a6c191687")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR10")
 					(unit 1)
@@ -8248,7 +8248,7 @@
 			(uuid "030e553c-41ef-4865-9ea2-b8cd0f6b4403")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#FLG06")
 					(unit 1)
@@ -8314,7 +8314,7 @@
 			(uuid "01a245fe-99c3-4928-be5a-258076b4abbd")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "D1")
 					(unit 1)
@@ -8378,7 +8378,7 @@
 			(uuid "e5300240-58b8-4324-ac8c-588c509b7792")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR03")
 					(unit 1)
@@ -8444,7 +8444,7 @@
 			(uuid "b9e96416-f62f-4d9c-b029-2e946dcb72de")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "R10")
 					(unit 1)
@@ -8508,7 +8508,7 @@
 			(uuid "17f6a0d6-cdce-48b6-b9a5-9314d230b17d")
 		)
 		(instances
-			(project "CRSF-Multiswitch-ESP32-S3"
+			(project "RC-Multiswitch-ESP32-S3"
 				(path "/a6bc2266-7635-40d2-adda-868e925c491c"
 					(reference "#PWR21")
 					(unit 1)
