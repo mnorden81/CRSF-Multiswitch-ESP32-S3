@@ -559,7 +559,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 5.3 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -763,7 +763,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 5.47 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -967,7 +967,7 @@
 				)
 			)
 		)
-		(property "Value" "P6KE33A"
+		(property "Value" "P6KE18A"
 			(at 6.75 -3.27 180)
 			(layer "F.Fab")
 			(uuid "b812a15d-1844-4a8c-ae90-2ce26076cf04")
@@ -2102,7 +2102,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.35 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -2625,7 +2625,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 4.05 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -3040,7 +3040,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3244,7 +3244,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -3875,7 +3875,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -4290,7 +4290,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -4494,7 +4494,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4698,7 +4698,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4902,7 +4902,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -6136,7 +6136,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -6764,7 +6764,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -6968,7 +6968,7 @@
 				)
 			)
 		)
-		(property "Value" "12V"
+		(property "Value" "5-12V"
 			(at 1 7.45 270)
 			(layer "F.Fab")
 			(uuid "9b224fb8-55b1-4c6e-9998-df695ffa7d3d")
@@ -7384,7 +7384,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -7588,7 +7588,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -7792,7 +7792,7 @@
 				)
 			)
 		)
-		(property "Value" "150"
+		(property "Value" "R"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -8352,7 +8352,7 @@
 			)
 		)
 	)
-	(gr_text "P6KE33A"
+	(gr_text "P6KE18A"
 		(at 139.72 81.9 0)
 		(layer "F.SilkS")
 		(uuid "6f7d8eb2-24bb-49f7-8452-5551786787c4")
@@ -8388,7 +8388,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "5V-24V"
+	(gr_text "5V-12V"
 		(at 124.9 80.4 0)
 		(layer "F.SilkS")
 		(uuid "9369cad8-9e59-447f-a933-8d1180942541")

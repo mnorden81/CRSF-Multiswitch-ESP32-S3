@@ -14,16 +14,16 @@ Dokumente:
 ## Merkmale
 - 8 Schaltkanaele ueber ULN2803A, Kontroll-LED je Kanal
 - UART A (Eingang), UART B und UART C (Weiterleitung/Erweiterung)
-- Versorgung des ESP32 aus +5 V des Empfaengers, Last getrennt mit 12-24 V
+- Versorgung des ESP32 aus +5 V des Empfaengers, Last getrennt mit 5-12 V
 - Eigener THT-Footprint fuer den S3-Zero (nur 2x9 Header)
 
 ## Hardware (v0.4 (PCB vom C3 uebertragen))
 Board: Waveshare ESP32-S3-Zero
 
-- Lastspannung 12-24 V (VLOAD) an CN2 (JST PH 2), TVS-Diode P6KE33A als Schutz.
+- Lastspannung 5-12 V (VLOAD) an CN2 (JST PH 2), TVS-Diode P6KE18A als Schutz.
 - Treiber ULN2803A, 8 Kanaele, max. 500 mA je Kanal (Verlustleistung des ULN2803A bei mehreren Kanaelen beachten).
-- R9-R16 (THT 1/4 W, Standard 150 R) zwischen ULN-Ausgang und Stiftleiste J1, je nach Verbraucher waehlen.
-- R1-R8 und LED1-LED8 (3 mm) als Kontroll-LED je Kanal, vom Steuersignal Sn gegen GND.
+- R9-R16 (THT 1/4 W) zwischen ULN-Ausgang und Stiftleiste J1: kein Wert vorgegeben, der Anwender legt sie passend zu Verbraucher und Lastspannung aus.
+- R1-R8 und LED1-LED8 (3 mm) als Kontroll-LED je Kanal, vom Steuersignal Sn gegen GND. Werte legt der Anwender fest, eine Empfehlung ist auf der Platine aufgedruckt.
 - Keine Pulldowns und keine Widerstaende in den UART-Leitungen. Der ESP32 wird aus +5 V von CN1 (BEC/Empfaenger) versorgt.
 
 ### Belegung
@@ -37,12 +37,12 @@ Board: Waveshare ESP32-S3-Zero
 
 ### Anschluesse
 - CN1, J5, J6: UART A/B/C als JST-GH 4 (Footprint BM04B-GHS-TBT)
-- CN2 Last 12-24 V (JST PH 2, max. ca. 2 A je Kontakt)
+- CN2 Last 5-12 V (JST PH 2, max. ca. 2 A je Kontakt)
 - J1 Ausgaenge S0..S7
 
 ### Hinweise
 - UART A liegt auf UART0: beim Booten gibt das ROM ein Log auf IO43 aus.
-- LED-Vorwiderstaende R1-R8 bei 3,3 V (ca. 5 mA): Rot/Gelb 270 R, Gruen 220 R, Blau/Weiss 56 R.
+- Empfehlung LED-Vorwiderstaende R1-R8 bei 3,3 V (ca. 5 mA, auch auf der Platine aufgedruckt): Rot/Gelb 270 R, Gruen 220 R, Blau/Weiss 56 R.
 - Footprint ESP32-S3-Zero_THT: 2x9, 2,54 mm, Reihenabstand 15,24 mm. Vor dem Layout 1:1 am echten Board pruefen.
 
 ## Firmware (v4.01)
