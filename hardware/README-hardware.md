@@ -17,7 +17,7 @@ Zuordnung so gewaehlt, dass die vorhandenen Leiterbahnen des C3-Layouts moeglich
 
 ## PCB (aus dem C3-Layout uebertragen)
 - Platine, Bauteilpositionen, Beschriftungen und alle Leiterbahnen ausser am ESP32 unveraendert uebernommen.
-- U1 (ESP32-S3-Zero, 2x9) steht an derselben Stelle wie der C3 (Mittelpunkt), Pads neu belegt. Alle Leiterbahnen, die an U1 haengen, wurden entfernt und muessen neu geroutet werden (Ratsnest in KiCad, 20 offene Verbindungen).
+- U1 (ESP32-S3-Zero, 2x9) steht an derselben Stelle wie der C3 (Mittelpunkt), Pads neu belegt. Die Leiterbahnen an U1 sind in der PCB-Datei (Stand KiCad-ZIP 2026-10-15) neu verlegt: jeder belegte Pin hat eine Bahn mit passendem Netz. Grobe Pruefung per Skript ohne KiCad (2026-10-18): an U1 fehlt keine Verbindung, keine Kurzschluesse gefunden; offen erscheinen nur 3 Stellen an VLOAD/GND, vermutlich T-Abzweige mitten auf einer Bahn. Massgeblich ist der DRC in KiCad.
 - J6 (UART C) ist neu, Platzierung unten rechts nur ein Vorschlag.
 - Nach dem Oeffnen: Pruefen -> DRC ausfuehren, Footprint U1 am echten Board gegenpruefen. Im Entstehungs-Sandkasten war kein KiCad 9 verfuegbar, daher kein ERC/DRC.
 

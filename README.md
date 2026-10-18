@@ -2,7 +2,7 @@
 
 CRSF-Multiswitch mit 8 Schaltkanaelen auf einem Waveshare ESP32-S3-Zero.
 
-Gleiche Funktion wie die C3-Variante, aber mit dem ESP32-S3-Zero und einem dritten UART. Das PCB wurde vom C3-Layout uebernommen, nur die Leitungen am ESP32 muessen neu geroutet werden.
+Gleiche Funktion wie die C3-Variante, aber mit dem ESP32-S3-Zero und einem dritten UART. Das PCB wurde vom C3-Layout uebernommen, die Leitungen am ESP32 sind neu verlegt (DRC steht noch aus).
 
 Dokumente:
 - [docs/Projektbeschreibung.docx](docs/Projektbeschreibung.docx): Projektbeschreibung
@@ -55,11 +55,11 @@ Board: Waveshare ESP32-S3-Zero
 - `docs/`: Projektbeschreibung, Hardware-Beschreibung und Firmware-Spezifikation.
 
 ## Stand
-- Hardware: Schaltplan fertig, PCB uebernommen. 20 Verbindungen an U1 sind noch nicht geroutet, J6 nur vorlaeufig platziert.
+- Hardware: Schaltplan fertig, PCB vom C3 uebernommen und an U1 neu verlegt. DRC in KiCad steht noch aus, J6 nur vorlaeufig platziert.
 - Firmware: v4.01 kompiliert fuer C3 und S3, noch nicht auf Hardware getestet.
 
 ## Offene Punkte
-- Leiterbahnen an U1 routen, danach DRC
+- DRC in KiCad ausfuehren (an U1 sind laut PCB-Datei alle Anschluesse verlegt)
 - Platzierung von J6 (UART C) festlegen
 - Footprint am echten Board pruefen
 - Firmware auf Hardware testen (Einzelmodul und Kette mit 2-3 Modulen)
