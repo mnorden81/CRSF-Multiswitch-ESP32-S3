@@ -1,9 +1,9 @@
 # RC-Multiswitch-ESP32-S3 (v0.4, PCB vom C3 uebertragen)
 Ein Multiswitch nach CRSF Multiswitch THT v1.1 mit Waveshare ESP32-S3-Zero, ULN2803A, 8 Kanaele.
 
-- Last: 12-24V (VLOAD, JST PH 2 an CN2, max. ca. 2A je Kontakt; TVS P6KE33A), max. 500mA je Kanal.
-- R9-R16 (THT 1/4W, Standard 150R) zwischen ULN-Ausgang und Stiftleiste J1: je Verbraucher waehlen, Leistung beachten.
-- R1-R8 (150R) + LED1-8 (3mm): Kontroll-LED je Kanal, vom Steuersignal Sn gegen GND.
+- Last: 5-12V (VLOAD, JST PH 2 an CN2, max. ca. 2A je Kontakt; TVS P6KE18A), max. 500mA je Kanal.
+- R9-R16 (THT 1/4W) zwischen ULN-Ausgang und Stiftleiste J1: kein Wert vorgegeben, der Anwender legt sie je Verbraucher aus, Leistung beachten.
+- R1-R8 (Wert vom Anwender, Empfehlung auf der Platine) + LED1-8 (3mm): Kontroll-LED je Kanal, vom Steuersignal Sn gegen GND.
 - Keine Pulldowns, keine Widerstaende in den UART-Leitungen. ESP32 wird aus +5V von CN1 versorgt. Adresse per Firmware/Web-UI/Lua.
 - UART-Buchsen CN1, J5, J6 als JST-GH (SMD-only, Footprint BM04B-GHS-TBT).
 
@@ -34,4 +34,4 @@ Zuordnung so gewaehlt, dass die vorhandenen Leiterbahnen des C3-Layouts moeglich
 | Gruen | 2,1V | 220R |
 | Blau | 3,0V | 56R |
 | Weiss | 3,0V | 56R |
-Blau/Weiss: Uf streut stark, bei Bedarf am echten LED nachmessen. Dieselbe Tabelle steht als Hinweis im Schaltplan und kann als Silkscreen ins PCB.
+Blau/Weiss: Uf streut stark, bei Bedarf am echten LED nachmessen. Dieselbe Tabelle steht als Hinweis im Schaltplan und ist als Aufdruck auf der Platine.
