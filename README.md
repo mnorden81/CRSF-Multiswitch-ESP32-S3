@@ -13,7 +13,7 @@ Dokumente:
 
 ## Merkmale
 - 8 Schaltkanaele ueber ULN2803A, Kontroll-LED je Kanal
-- UART A (Eingang), UART B und UART C mit waehlbarer Rolle: Modulkette (CRSF), S.Port-LiPo-Sensoren oder GPS
+- UART A (Eingang), UART B und UART C mit waehlbarer Rolle: Modulkette (CRSF), S.Port-LiPo-Sensoren, GPS oder Raw, je mit eigener Baudrate
 - Versorgung des ESP32 aus +5 V des Empfaengers, Last getrennt mit 5-12 V
 - Eigener THT-Footprint fuer den S3-Zero (nur 2x9 Header)
 
@@ -45,20 +45,21 @@ Board: Waveshare ESP32-S3-Zero
 - Empfehlung LED-Vorwiderstaende R1-R8 bei 3,3 V (ca. 5 mA, auch auf der Platine aufgedruckt): Rot/Gelb 270 R, Gruen 220 R, Blau/Weiss 56 R.
 - Footprint ESP32-S3-Zero_THT: 2x9, 2,54 mm, Reihenabstand 15,24 mm. Vor dem Layout 1:1 am echten Board pruefen.
 
-## Firmware (v4.04)
+## Firmware (v4.05)
 - Arduino-Sketch `firmware/RC_Multiswitch`, gleicher Quellcode fuer C3 und S3 (Board wird automatisch erkannt). Basis: MultiSwitch_ESP32_V3 v3.12.
-- CRSF auf UART A, wahlweise SBUS. UART B und UART C per Lua oder Web-UI auf Aus, CRSF (Modulkette), S.Port oder GPS einstellbar. In der Modulkette ist jedes Modul mit eigener Adresse ueber Lua einzeln einstellbar.
+- CRSF auf UART A, wahlweise SBUS. UART B und UART C per Lua oder Web-UI auf Aus, CRSF (Modulkette), S.Port, GPS oder Raw einstellbar, mit eigener Baudrate je UART. Beim GPS sucht die Baudrate „Auto“ (Vorgabe) die Rate selbst und stellt das GPS auf 115200 Baud und 10 Hz um, wie bei Betaflight. In der Modulkette ist jedes Modul mit eigener Adresse ueber Lua einzeln einstellbar.
+- Gemeinsame Basis aller ESP32-Module seit v4.05: `firmware/RC_Multiswitch/src/RC_Common/` (siehe deren README).
 - BOOT-Taster 3 s: WLAN-AP ein/aus. Status-LED nur beim S3.
 - Details und Bauanleitung: [firmware/README.md](firmware/README.md).
 
 ## Ordner
 - `hardware/`: KiCad-Projekt (Schaltplan, PCB, PDF, eigene Footprints, fp-lib-table). Entwurfsnotizen in [hardware/README-hardware.md](hardware/README-hardware.md).
-- `firmware/`: Firmware v4.04 (Arduino-Sketch).
+- `firmware/`: Firmware v4.05 (Arduino-Sketch).
 - `docs/`: Projektbeschreibung, Hardware-Beschreibung und Firmware-Spezifikation.
 
 ## Stand
 - Hardware: Schaltplan fertig, PCB vom C3 uebernommen und an U1 neu verlegt. DRC in KiCad steht noch aus, J6 nur vorlaeufig platziert.
-- Firmware: v4.04 kompiliert fuer C3 und S3, noch nicht auf Hardware getestet.
+- Firmware: v4.05 kompiliert fuer C3 und S3, noch nicht auf Hardware getestet.
 
 ## Offene Punkte
 - DRC in KiCad ausfuehren (an U1 sind laut PCB-Datei alle Anschluesse verlegt)

@@ -1,5 +1,8 @@
 name: Firmware bauen
 
+# Gemeinsame CI aller ESP32-Module (RC_Common 1.1.0): RC_Common-Kopie
+# pruefen, Host-Tests, Firmware mit festem Core bauen, App- und
+# Komplett-Image hochladen.
 on:
   push:
     paths: ["firmware/**", ".github/workflows/firmware.yml"]
@@ -7,8 +10,21 @@ on:
     paths: ["firmware/**", ".github/workflows/firmware.yml"]
   workflow_dispatch:
 
+env:
+  RC_COMMON: firmware/RC_Multiswitch/src/RC_Common
+
 jobs:
+  rc-common:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: RC_Common unveraendert (MANIFEST.sha256)
+        run: cd "$RC_COMMON" && sha256sum -c --quiet MANIFEST.sha256
+      - name: Host-Tests (CRSF, Rollen, Lua-Menue, LED, Einstellungen)
+        run: sh "$RC_COMMON/tests/run_tests.sh"
+
   build:
+    needs: rc-common
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -33,7 +49,9 @@ jobs:
         run: |
           arduino-cli compile --fqbn "${{ matrix.fqbn }}" --warnings default \
             --output-dir build/${{ matrix.board }} firmware/RC_Multiswitch
+          ls -l build/${{ matrix.board }}
       - uses: actions/upload-artifact@v4
         with:
           name: RC_Multiswitch-${{ matrix.board }}
+          # *.ino.bin = OTA-Update, *.merged.bin = Komplett-Image ab 0x0 (USB)
           path: build/${{ matrix.board }}/*.bin

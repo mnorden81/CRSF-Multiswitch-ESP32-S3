@@ -1,5 +1,5 @@
 /*
- * board_config.h  -  Pin- und Board-Konfiguration RC-Multiswitch v4.04
+ * board_config.h  -  Pin- und Board-Konfiguration RC-Multiswitch v4.05
  *
  * Gleicher Quellcode fuer beide Platinen. Das Board wird automatisch aus dem
  * in der Arduino IDE gewaehlten Chip erkannt:

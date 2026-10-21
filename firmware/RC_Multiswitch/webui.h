@@ -1,8 +1,10 @@
 /*
- * webui.h  –  WiFi-Weboberfläche für RC-Multiswitch C3/S3  v4.04
+ * webui.h  –  WiFi-Weboberfläche für RC-Multiswitch C3/S3  v4.05
+ * v4.05: OTA-Upload, JSON-Helfer und /rc_common.js kommen aus RC_Common
+ * (src/RC_Common/web_common.h). Baudrate je UART, Rolle "Raw".
  * NEU v4.04: Karte "UART B/C" im RC-Tab (Rolle Aus/CRSF/S.Port/GPS) und
- * Anzeige von S.Port/GPS im Debug-Tab. UROLE_*, g_port*_role, g_gps_baud
- * stehen in RC_Multiswitch.ino vor dem Include dieser Datei.
+ * Anzeige von S.Port/GPS im Debug-Tab. g_port_role[], g_port_baud[],
+ * g_ports[] stehen in RC_Multiswitch.ino vor dem Include dieser Datei.
  * NEU V3.00: MKan-Gruppen (2 zusaetzliche, unabhaengige Kanalquellen) -
  * siehe Kommentar bei MULTISW_NUM_GROUPS in MultiSwitch_ESP32_V3.ino.
  * NEU V3.10: bis zu 3 Konfigurationen (Kanal-Quelle + Blink/PWM) pro
@@ -17,7 +19,6 @@
 #include <stdlib.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#include <Update.h>          // NEU v2.00: Firmware-Update per WLAN (OTA), siehe handleOtaUpdate*()
 
 // ============================================================
 //  Forward-Deklarationen
@@ -374,22 +375,21 @@ main{max-width:560px;margin:0 auto;padding:20px 14px 60px}
 
     <!-- UART B/C (NEU v4.04): Rolle je Zusatz-UART, wie beim Soundmodul -->
     <div class="card">
-      <div class="card-title">UART B/C (NEU v4.04)</div>
+      <div class="card-title">UART B/C</div>
       <div class="row"><label>UART B</label>
         <select id="sel-portb" onchange="onPortChange()"></select>
       </div>
       <div class="row" id="row-portc"><label>UART C</label>
         <select id="sel-portc" onchange="onPortChange()"></select>
       </div>
-      <div class="row"><label>GPS Baudrate</label>
-        <select id="sel-gpsbaud" onchange="onPortChange()">
-          <option value="9600">9600</option><option value="19200">19200</option>
-          <option value="38400">38400</option><option value="57600">57600</option>
-          <option value="115200">115200</option>
-        </select>
+      <div class="row"><label>UART B Baud</label>
+        <select id="sel-portb-baud" onchange="onPortChange()"></select>
       </div>
-      <span style="color:var(--yellow);font-size:12px;display:none;margin-top:6px" id="portc-dup">UART C ist aus: S.Port und GPS laufen nur auf einem Port.</span>
-      <span style="color:var(--sub);font-size:12px;display:block;margin-top:6px">CRSF = Modulkette zum naechsten Modul. S.Port = FrSky LiPo-Sensoren (FLVSS/MLVSS), GPS = NMEA-Empfaenger. Bei CRSF gehen Zellspannungen und GPS als Telemetrie an den Sender. Wirkt nach einem Neustart.</span>
+      <div class="row" id="row-portc-baud"><label>UART C Baud</label>
+        <select id="sel-portc-baud" onchange="onPortChange()"></select>
+      </div>
+      <span style="color:var(--yellow);font-size:12px;display:none;margin-top:6px" id="portc-dup">UART C ist aus: S.Port, GPS und Raw laufen nur auf einem Port.</span>
+      <span style="color:var(--sub);font-size:12px;display:block;margin-top:6px">CRSF = Modulkette zum naechsten Modul. S.Port = FrSky LiPo-Sensoren (FLVSS/MLVSS), GPS = NMEA-Empfaenger, Raw = UART offen ohne Auswertung. Beim Wechsel der Rolle wird die passende Baudrate vorgeschlagen. Bei CRSF gehen Zellspannungen und GPS als Telemetrie an den Sender. Wirkt nach einem Neustart.</span>
       <span style="font-size:12px;display:block;margin-top:6px" id="port-hint"></span>
     </div>
   </div>
@@ -470,7 +470,7 @@ main{max-width:560px;margin:0 auto;padding:20px 14px 60px}
       <div id="crsf-diag-body" class="mono" style="line-height:1.8"></div>
     </div>
     <div class="card">
-      <div class="card-title">UART B/C (NEU v4.04)</div>
+      <div class="card-title">UART B/C</div>
       <div id="port-diag-body" class="mono" style="line-height:1.8"></div>
     </div>
     <div class="card">
@@ -480,6 +480,7 @@ main{max-width:560px;margin:0 auto;padding:20px 14px 60px}
   </div>
 </main>
 
+<script src="/rc_common.js"></script>
 <script>
 let state={},curOut=-1,pollTimer=null;
 const $ = id => document.getElementById(id);
@@ -771,14 +772,13 @@ async function fetchConfig(){
   $('sel-wifi-always').value=d.wifi_always_on?1:0;
   updateWifiAlwaysOnHint();
   // NEU v4.04: UART B/C
-  const roles=(d.port_roles||'Aus').split(';');
-  ['sel-portb','sel-portc'].forEach(id=>{
-    $(id).innerHTML=roles.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
-  });
-  $('sel-portb').value=d.portb_role;
-  $('sel-portc').value=d.portc_role;
-  $('sel-gpsbaud').value=d.gps_baud;
+  rcFillSelect($('sel-portb'),d.port_roles||RC_ROLES,d.portb_role);
+  rcFillSelect($('sel-portc'),d.port_roles||RC_ROLES,d.portc_role);
+  fillBaud($('sel-portb-baud'),d.portb_baud);
+  fillBaud($('sel-portc-baud'),d.portc_baud);
+  window._portRole=[d.portb_role,d.portc_role];
   $('row-portc').style.display=d.has_portc?'':'none';
+  $('row-portc-baud').style.display=d.has_portc?'':'none';
   $('portc-dup').style.display=d.portc_dup?'block':'none';
   updateRcRows(d.rc_system, ek);
   window._rcBoot=parseInt(d.rc_system);
@@ -847,12 +847,22 @@ async function onEkChange(){
 }
 
 // CRSF Modul-Adresse
-// NEU v4.04: Rolle UART B/C speichern, wirkt nach Neustart
+// v4.05: Baudraten-Auswahl (Liste aus /rc_common.js mit "Auto", eigener
+// Wert bleibt erhalten)
+function fillBaud(sel,cur){ rcFillBaud(sel,cur); }
+// NEU v4.04: Rolle UART B/C speichern, wirkt nach Neustart. v4.05: neue
+// Rolle schlaegt ihre Baudrate vor (Raw/Aus behalten die bisherige).
 async function onPortChange(){
+  const r=[parseInt($('sel-portb').value),parseInt($('sel-portc').value)];
+  [['sel-portb-baud',0],['sel-portc-baud',1]].forEach(([id,i])=>{
+    const b=rcRoleDefaultBaud(r[i]);
+    if(window._portRole&&r[i]!==window._portRole[i]&&b&&r[i]!==4) fillBaud($(id),b);
+  });
+  window._portRole=r;
   await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({portb_role:parseInt($('sel-portb').value),
-      portc_role:parseInt($('sel-portc').value),
-      gps_baud:parseInt($('sel-gpsbaud').value)})});
+    body:JSON.stringify({portb_role:r[0],portc_role:r[1],
+      portb_baud:parseInt($('sel-portb-baud').value),
+      portc_baud:parseInt($('sel-portc-baud').value)})});
   const h=$('port-hint');
   h.innerHTML='Gespeichert, wirkt nach Neustart. <a href="#" onclick="restartForPorts();return false">Jetzt neu starten</a>';
   h.style.color='var(--green)';
@@ -989,7 +999,8 @@ async function importConfigData(data){
       modul_adress:s.modul_adress, dnam:s.dnam, ssid:s.ssid, pass:s.pass, ip:s.ip,
       wifi_auto:s.wifi_auto, wifi_auto_timeout:s.wifi_auto_timeout,
       wifi_always_on:s.wifi_always_on,
-      portb_role:s.portb_role, portc_role:s.portc_role, gps_baud:s.gps_baud   // NEU v4.04
+      portb_role:s.portb_role, portc_role:s.portc_role,   // NEU v4.04
+      portb_baud:s.portb_baud, portc_baud:s.portc_baud    // v4.05
     })});
   for(const o of (data.outputs||[])){
     if(o.ch===undefined) continue;
@@ -1004,49 +1015,15 @@ async function importConfigData(data){
 }
 
 // ─── Firmware-Update per WLAN (OTA, NEU v2.00) ─────────────────────────
-// Echtes multipart/form-data an /api/otaupdate (siehe handleOtaUpdateData()/
-// handleOtaUpdate() in webui.h) - Fortschritt per XHR-upload.onprogress,
+// Echtes multipart/form-data an /api/otaupdate (RC_Common web_common.cpp) - Fortschritt per XHR-upload.onprogress,
 // da fetch() das (noch) nicht zuverlaessig unterstuetzt. Bei Erfolg startet
 // das Modul selbst neu; die Antwort trifft trotzdem noch ein, bevor die
 // Verbindung tatsaechlich abbricht.
 function uploadOtaFile(file){
-  if(!file) return;
-  if(!confirm('Firmware-Update mit "'+file.name+'" starten? Waehrend des '+
-              'Uploads die Spannungsversorgung des Moduls NICHT unterbrechen '+
-              '- moeglichst ueber ESC/Akku bestromt, nicht nur ueber USB. '+
-              'Das Modul startet danach automatisch neu.')){
-    $('ota-file').value=''; return;
-  }
-  const status=$('ota-status');
-  status.textContent='Hochladen … (0%)';
-
-  const fd=new FormData();
-  fd.append('file',file,file.name);
-
-  const x=new XMLHttpRequest();
-  x.open('POST','/api/otaupdate',true);
-  x.upload.onprogress=function(e){
-    if(e.lengthComputable) status.textContent='Hochladen … ('+Math.round(e.loaded/e.total*100)+'%)';
-  };
-  x.onload=function(){
-    try{
-      const d=JSON.parse(x.responseText);
-      if(d.ok){
-        status.textContent='Update erfolgreich ('+d.size+' Bytes) – Modul startet neu …';
-      } else {
-        status.textContent='Fehler ('+d.error+')';
-        alert('Update fehlgeschlagen ('+d.error+').');
-      }
-    }catch(e){ status.textContent='Fehler beim Hochladen'; alert('Update fehlgeschlagen.'); }
-  };
-  x.onerror=function(){
-    // Kann auch bedeuten, dass das Update erfolgreich war und das Modul
-    // bereits neu startet, bevor die Antwort ankam - fuer den Nutzer nicht
-    // unterscheidbar von einem echten Verbindungsfehler.
-    status.textContent='Verbindung unterbrochen – Update war evtl. trotzdem erfolgreich (neu verbinden und prüfen).';
-  };
-  x.send(fd);
-  $('ota-file').value='';
+  // v4.05: gemeinsamer Upload aus /rc_common.js
+  rcOtaUpload(file,$('ota-status'),$('ota-file'),function(ok,err){
+    if(!ok) alert('Update fehlgeschlagen ('+rcErrText(err)+').');
+  });
 }
 
 function startPoll(){pollTimer=setInterval(pollDebug,800);}
@@ -1128,98 +1105,20 @@ static void sendJson(const String& json) {
 static void sendOk()  { sendJson("{\"ok\":true}"); }
 static void send404() { webServer.send(404,"application/json","{\"error\":\"not found\"}"); }
 
-static String jsonEscape(const char* s) {
-  String out;
-  if (!s) return out;
-  while (*s) {
-    switch (*s) {
-      case '\\': out += "\\\\"; break;
-      case '"':  out += "\\\""; break;
-      case '\b': out += "\\b"; break;
-      case '\f': out += "\\f"; break;
-      case '\n': out += "\\n"; break;
-      case '\r': out += "\\r"; break;
-      case '\t': out += "\\t"; break;
-      default: out += *s; break;
-    }
-    s++;
-  }
-  return out;
-}
-
-static bool jsonExtractInt(const String& body, const char* key, int& out) {
-  String token = "\"" + String(key) + "\"";
-  int p = body.indexOf(token);
-  if (p < 0) return false;
-  p = body.indexOf(':', p + token.length());
-  if (p < 0) return false;
-  p++;
-  while (p < (int)body.length() && isspace((unsigned char)body[p])) p++;
-  char* endPtr = nullptr;
-  long v = strtol(body.c_str() + p, &endPtr, 10);
-  if (endPtr == body.c_str() + p) return false;
-  out = (int)v;
-  return true;
-}
-
-static bool jsonExtractBool(const String& body, const char* key, bool& out) {
-  String token = "\"" + String(key) + "\"";
-  int p = body.indexOf(token);
-  if (p < 0) return false;
-  p = body.indexOf(':', p + token.length());
-  if (p < 0) return false;
-  p++;
-  while (p < (int)body.length() && isspace((unsigned char)body[p])) p++;
-  if (body.startsWith("true", p)) {
-    out = true;
-    return true;
-  }
-  if (body.startsWith("false", p)) {
-    out = false;
-    return true;
-  }
-  return false;
-}
-
-static bool jsonExtractString(const String& body, const char* key, String& out) {
-  String token = "\"" + String(key) + "\"";
-  int p = body.indexOf(token);
-  if (p < 0) return false;
-  p = body.indexOf(':', p + token.length());
-  if (p < 0) return false;
-  p++;
-  while (p < (int)body.length() && isspace((unsigned char)body[p])) p++;
-  if (p >= (int)body.length() || body[p] != '"') return false;
-  p++;
-  out = "";
-  bool esc = false;
-  while (p < (int)body.length()) {
-    char c = body[p++];
-    if (esc) {
-      switch (c) {
-        case '"': out += '"'; break;
-        case '\\': out += '\\'; break;
-        case '/': out += '/'; break;
-        case 'b': out += '\b'; break;
-        case 'f': out += '\f'; break;
-        case 'n': out += '\n'; break;
-        case 'r': out += '\r'; break;
-        case 't': out += '\t'; break;
-        default: out += c; break;
-      }
-      esc = false;
-      continue;
-    }
-    if (c == '\\') { esc = true; continue; }
-    if (c == '"') return true;
-    out += c;
-  }
-  return false;
-}
+// v4.05: JSON-Helfer aus RC_Common (webJsonEscape/-Int/-Bool/-String)
 
 // ============================================================
 //  RC-System-Name
 // ============================================================
+// v4.05: Rolle und Baudrate eines UARTs fuer den Debug-Tab, GPS mit "Auto"
+static String portStateText(const UartPort& p) {
+  String t = uartRoleName(p.activeRole);
+  if (p.activeRole == UROLE_OFF) return t;
+  if (p.activeRole == UROLE_GPS && gpsBaudAuto())
+    return t + " Auto " + (gpsBaudLocked() ? String(gpsGetBaud()) : String("(sucht)"));
+  return t + " " + String(p.baud);
+}
+
 static const char* rcName(int sys) {
     switch(sys) {
         case 0: return "FrSky SBUS";
@@ -1240,7 +1139,7 @@ static void handleStatus() {
     j += "\"version\":\"v" + String(Version / 100) + "." + String(Version % 100 < 10 ? "0" : "") + String(Version % 100) + "\",";
     j += "\"bus_ok\":" + String(BUS_OK ? "true" : "false") + ",";
     j += "\"rc_system\":" + String(RC_System_boot) + ",";
-  j += "\"rc_system_name\":\"" + jsonEscape(rcName(RC_System_boot)) + "\",";
+  j += "\"rc_system_name\":\"" + webJsonEscape(rcName(RC_System_boot)) + "\",";
         j += "\"rc_system_boot\":" + String(RC_System_boot) + ",";
 
     // Einkanal
@@ -1252,7 +1151,7 @@ static void handleStatus() {
     for (int i = 0; i < 8; i++) {
         if (i) j += ",";
         j += "{";
-        j += "\"name\":\"" + jsonEscape(Ausgang_Name[i]) + "\",";
+        j += "\"name\":\"" + webJsonEscape(Ausgang_Name[i]) + "\",";
         j += "\"on\":"    + String(Ausgang[i] ? "true" : "false") + ",";
         j += "\"override\":" + String(g_manual_override[i] ? "true" : "false") + ",";
         j += "\"kanal\":" + String(Ausgang_Kanal[i]) + ",";
@@ -1298,14 +1197,14 @@ static void handleStatus() {
     j += "},";
     // NEU v4.04: UART B/C (Stand beim Booten) + S.Port/GPS-Daten
     j += "\"ports\":{";
-    j += "\"b\":\"" + String(portRoleName(g_portb_role_boot)) + "\",";
-    j += "\"c\":\"" + String(portRoleName(g_portc_role_boot)) + "\",";
+    j += "\"b\":\"" + portStateText(g_ports[0]) + "\",";
+    j += "\"c\":\"" + portStateText(g_ports[1]) + "\",";
 #if defined(UART_C_SERIAL)
     j += "\"has_c\":true,";
 #else
     j += "\"has_c\":false,";
 #endif
-    j += "\"c_dup\":" + String(g_portc_duplicate ? "true" : "false");
+    j += "\"c_dup\":" + String(g_ports[1].duplicate ? "true" : "false");
     if (sportLipoIsActive()) {
         j += ",\"sport\":[";
         for (int i = 0; i < SPORT_NUM_SENSORS; i++) {
@@ -1348,24 +1247,25 @@ static void handleConfig() {
         j += "\"sbus_gch1\":"   + String(SBUS_Gruppen_Channel[1]) + ",";  // NEU V3.00
         j += "\"sbus_gmode0\":" + String(SBUS_Gruppen_Mode[0])    + ",";  // NEU V3.00
         j += "\"sbus_gmode1\":" + String(SBUS_Gruppen_Mode[1])    + ",";  // NEU V3.00
-      j += "\"dnam\":\""        + jsonEscape(g_device_name)  + "\",";
-      j += "\"ssid\":\""        + jsonEscape(g_wifi_ssid)    + "\",";
-      j += "\"pass\":\""        + jsonEscape(g_wifi_pass)    + "\",";
-      j += "\"ip\":\""          + jsonEscape(g_wifi_ip)      + "\",";
+      j += "\"dnam\":\""        + webJsonEscape(g_device_name)  + "\",";
+      j += "\"ssid\":\""        + webJsonEscape(g_wifi_ssid)    + "\",";
+      j += "\"pass\":\""        + webJsonEscape(g_wifi_pass)    + "\",";
+      j += "\"ip\":\""          + webJsonEscape(g_wifi_ip)      + "\",";
         j += "\"wifi_auto\":"      + String(g_wifi_auto ? "true" : "false") + ",";
         j += "\"wifi_auto_timeout\":" + String(g_wifi_auto_timeout) + ",";
         j += "\"wifi_always_on\":" + String(g_wifi_always_on ? "true" : "false") + ",";
         // NEU v4.04: Rollen UART B/C
-        j += "\"port_roles\":\"" + String(UROLE_ROLE_OPTIONS) + "\",";
-        j += "\"portb_role\":" + String(g_portb_role) + ",";
-        j += "\"portc_role\":" + String(g_portc_role) + ",";
-        j += "\"gps_baud\":"   + String(g_gps_baud) + ",";
+        j += "\"port_roles\":\"" + String(uartRoleOptions()) + "\",";
+        j += "\"portb_role\":" + String(g_port_role[0]) + ",";
+        j += "\"portc_role\":" + String(g_port_role[1]) + ",";
+        j += "\"portb_baud\":" + String(g_port_baud[0]) + ",";   // v4.05
+        j += "\"portc_baud\":" + String(g_port_baud[1]) + ",";
 #if defined(UART_C_SERIAL)
         j += "\"has_portc\":true,";
 #else
         j += "\"has_portc\":false,";
 #endif
-        j += "\"portc_dup\":" + String(g_portc_duplicate ? "true" : "false");
+        j += "\"portc_dup\":" + String(g_ports[1].duplicate ? "true" : "false");
         j += "}";
         sendJson(j);
         return;
@@ -1376,76 +1276,76 @@ static void handleConfig() {
     bool changed = false;
 
     int v = 0;
-    if (jsonExtractInt(body, "rc_system", v)) {
+    if (webJsonInt(body, "rc_system", v)) {
       v = constrain(v, 0, 4);
       if (v != RC_System) { RC_System = v; changed = true; }
     }
-    if (jsonExtractInt(body, "crsf_channel", v)) {
+    if (webJsonInt(body, "crsf_channel", v)) {
       if ((v >= 0 && v <= 15) || v == 999) {
         if (v != CRSF_Channel) { CRSF_Channel = v; changed = true; }
       }
     }
-    if (jsonExtractInt(body, "einkanal_mode", v)) {
+    if (webJsonInt(body, "einkanal_mode", v)) {
       bool valid = (v == 0 || v == 999 || (v >= 10 && v <= 13));
       if (valid && v != einkanal_mode) { einkanal_mode = v; changed = true; }
     }
-    if (jsonExtractInt(body, "modul_adress", v)) {
+    if (webJsonInt(body, "modul_adress", v)) {
       v = constrain(v, 0, 20);
       if (v != modul_adress) { modul_adress = v; changed = true; }
     }
     // NEU V3.00: MKan-Gruppen (CRSF-Adresse bzw. SBUS-Kanal/-Modus je Gruppe)
-    if (jsonExtractInt(body, "ek_gadr0", v)) {
+    if (webJsonInt(body, "ek_gadr0", v)) {
       v = (v == 255) ? 255 : constrain(v, 0, 20);
       if (v != EK_Gruppen_Adresse[0]) { EK_Gruppen_Adresse[0] = v; changed = true; }
     }
-    if (jsonExtractInt(body, "ek_gadr1", v)) {
+    if (webJsonInt(body, "ek_gadr1", v)) {
       v = (v == 255) ? 255 : constrain(v, 0, 20);
       if (v != EK_Gruppen_Adresse[1]) { EK_Gruppen_Adresse[1] = v; changed = true; }
     }
-    if (jsonExtractInt(body, "sbus_gch0", v)) {
+    if (webJsonInt(body, "sbus_gch0", v)) {
       v = (v == 999) ? 999 : constrain(v, 0, 15);
       if (v != SBUS_Gruppen_Channel[0]) { SBUS_Gruppen_Channel[0] = v; changed = true; }
     }
-    if (jsonExtractInt(body, "sbus_gch1", v)) {
+    if (webJsonInt(body, "sbus_gch1", v)) {
       v = (v == 999) ? 999 : constrain(v, 0, 15);
       if (v != SBUS_Gruppen_Channel[1]) { SBUS_Gruppen_Channel[1] = v; changed = true; }
     }
-    if (jsonExtractInt(body, "sbus_gmode0", v)) {
+    if (webJsonInt(body, "sbus_gmode0", v)) {
       bool valid = (v == 0 || (v >= 10 && v <= 13));
       if (valid && v != SBUS_Gruppen_Mode[0]) { SBUS_Gruppen_Mode[0] = v; changed = true; }
     }
-    if (jsonExtractInt(body, "sbus_gmode1", v)) {
+    if (webJsonInt(body, "sbus_gmode1", v)) {
       bool valid = (v == 0 || (v >= 10 && v <= 13));
       if (valid && v != SBUS_Gruppen_Mode[1]) { SBUS_Gruppen_Mode[1] = v; changed = true; }
     }
 
     // NEU v2.00: WLAN-Auto-Failsafe
     bool bv = false;
-    if (jsonExtractBool(body, "wifi_auto", bv)) {
+    if (webJsonBool(body, "wifi_auto", bv)) {
       if (bv != g_wifi_auto) { g_wifi_auto = bv; changed = true; }
     }
-    if (jsonExtractInt(body, "wifi_auto_timeout", v)) {
+    if (webJsonInt(body, "wifi_auto_timeout", v)) {
       v = constrain(v, 5, 240);
       if ((uint16_t)v != g_wifi_auto_timeout) { g_wifi_auto_timeout = (uint16_t)v; changed = true; }
     }
     // NEU v2.02: WLAN dauerhaft an
-    if (jsonExtractBool(body, "wifi_always_on", bv)) {
+    if (webJsonBool(body, "wifi_always_on", bv)) {
       if (bv != g_wifi_always_on) { g_wifi_always_on = bv; changed = true; }
     }
-    // NEU v4.04: Rollen UART B/C und GPS-Baudrate (wirken nach Neustart)
-    if (jsonExtractInt(body, "portb_role", v)) {
-      if (v >= 0 && v < UROLE_ROLE_COUNT && v != g_portb_role) { g_portb_role = v; changed = true; }
-    }
-    if (jsonExtractInt(body, "portc_role", v)) {
-      if (v >= 0 && v < UROLE_ROLE_COUNT && v != g_portc_role) { g_portc_role = v; changed = true; }
-    }
-    if (jsonExtractInt(body, "gps_baud", v)) {
-      uint32_t b = GPS_BAUD_LIST[gpsBaudToIndex((uint32_t)v)];
-      if (b == (uint32_t)v && b != g_gps_baud) { g_gps_baud = b; changed = true; }
+    // NEU v4.04: Rollen UART B/C, v4.05: Baudrate je UART (wirken nach Neustart)
+    const char* roleKey[2] = {"portb_role", "portc_role"};
+    const char* baudKey[2] = {"portb_baud", "portc_baud"};
+    for (uint8_t i = 0; i < 2; i++) {
+      if (webJsonInt(body, roleKey[i], v) && v >= 0 && v < UROLE_COUNT && v != g_port_role[i]) {
+        setPortRole(i, (uint8_t)v); changed = true;
+      }
+      if (webJsonInt(body, baudKey[i], v) && v > 0 && uartBaudValid((uint32_t)v) && (uint32_t)v != g_port_baud[i]) {
+        g_port_baud[i] = (uint32_t)v; changed = true;
+      }
     }
 
     String s;
-    if (jsonExtractString(body, "dnam", s)) {
+    if (webJsonString(body, "dnam", s)) {
       s = s.substring(0, sizeof(g_device_name) - 1);
       if (strncmp(g_device_name, s.c_str(), sizeof(g_device_name) - 1) != 0) {
         strncpy(g_device_name, s.c_str(), sizeof(g_device_name) - 1);
@@ -1453,7 +1353,7 @@ static void handleConfig() {
         changed = true;
       }
     }
-    if (jsonExtractString(body, "ssid", s)) {
+    if (webJsonString(body, "ssid", s)) {
       s = s.substring(0, sizeof(g_wifi_ssid) - 1);
       if (strncmp(g_wifi_ssid, s.c_str(), sizeof(g_wifi_ssid) - 1) != 0) {
         strncpy(g_wifi_ssid, s.c_str(), sizeof(g_wifi_ssid) - 1);
@@ -1461,7 +1361,7 @@ static void handleConfig() {
         changed = true;
       }
     }
-    if (jsonExtractString(body, "pass", s)) {
+    if (webJsonString(body, "pass", s)) {
       s = s.substring(0, sizeof(g_wifi_pass) - 1);
       if (strncmp(g_wifi_pass, s.c_str(), sizeof(g_wifi_pass) - 1) != 0) {
         strncpy(g_wifi_pass, s.c_str(), sizeof(g_wifi_pass) - 1);
@@ -1469,7 +1369,7 @@ static void handleConfig() {
         changed = true;
       }
     }
-    if (jsonExtractString(body, "ip", s)) {
+    if (webJsonString(body, "ip", s)) {
       IPAddress ip;
       if (ip.fromString(s)) {
         s = s.substring(0, sizeof(g_wifi_ip) - 1);
@@ -1495,19 +1395,19 @@ static void handleSwitch() {
 
     // ch
     int ch = -1;
-    jsonExtractInt(body, "ch", ch);
+    webJsonInt(body, "ch", ch);
     if (ch < 0 || ch > 7) { send404(); return; }
 
     // release
     bool release = false;
-    if (jsonExtractBool(body, "release", release) && release) {
+    if (webJsonBool(body, "release", release) && release) {
         g_manual_override[ch] = false;
         sendOk(); return;
     }
 
     // on/off
     bool on = false;
-    if (!jsonExtractBool(body, "on", on)) { send404(); return; }
+    if (!webJsonBool(body, "on", on)) { send404(); return; }
     g_manual_override[ch] = true;
     g_manual_state[ch]    = on;
     sendOk();
@@ -1521,18 +1421,18 @@ static void handleOutput() {
     if (!webServer.hasArg("plain")) { send404(); return; }
     String body = webServer.arg("plain");
     int ch = -1;
-    jsonExtractInt(body, "ch", ch);
+    webJsonInt(body, "ch", ch);
     if (ch < 0 || ch > 7) { send404(); return; }
     bool changed = false;
     int val = 0;
-    if (jsonExtractInt(body, "kanal", val)) {
+    if (webJsonInt(body, "kanal", val)) {
       if (val >= 0 && val <= 95 && val != Ausgang_Kanal[ch]) {  // NEU V3.00: MKan bis 95
         Ausgang_Kanal[ch] = val;
         changed = true;
       }
     }
     int pwm_old = pwm_wert[ch];
-    if (jsonExtractInt(body, "pwm", val)) {
+    if (webJsonInt(body, "pwm", val)) {
       bool validPwm = (val >= 0 && val <= 255) || (val >= 300 && val <= 315);
       if (validPwm && val != pwm_wert[ch]) {
         pwm_wert[ch] = val;
@@ -1544,7 +1444,7 @@ static void handleOutput() {
         !(pwm_old >= 200 && pwm_old <= 207)) {
         einkanal_Data |= (1 << ch);
     }
-    if (jsonExtractInt(body, "mode", val)) {
+    if (webJsonInt(body, "mode", val)) {
       val = constrain(val, 0, 0xFFFF);
       if (val != mode[ch]) {
         mode[ch] = val;
@@ -1553,20 +1453,20 @@ static void handleOutput() {
     }
 
     // NEU V3.10: Konfig 2 pro Ausgang (optional - 255 = "nicht verwendet")
-    if (jsonExtractInt(body, "kanal2", val)) {
+    if (webJsonInt(body, "kanal2", val)) {
       if ((val == 255 || (val >= 0 && val <= 95)) && val != Ausgang_Kanal2[ch]) {
         Ausgang_Kanal2[ch] = val;
         changed = true;
       }
     }
-    if (jsonExtractInt(body, "pwm2", val)) {
+    if (webJsonInt(body, "pwm2", val)) {
       bool validPwm = (val >= 0 && val <= 255) || (val >= 300 && val <= 315);
       if (validPwm && val != pwm_wert2[ch]) {
         pwm_wert2[ch] = val;
         changed = true;
       }
     }
-    if (jsonExtractInt(body, "mode2", val)) {
+    if (webJsonInt(body, "mode2", val)) {
       val = constrain(val, 0, 0xFFFF);
       if (val != mode2[ch]) {
         mode2[ch] = val;
@@ -1575,20 +1475,20 @@ static void handleOutput() {
     }
 
     // NEU V3.10: Konfig 3 pro Ausgang (optional - 255 = "nicht verwendet")
-    if (jsonExtractInt(body, "kanal3", val)) {
+    if (webJsonInt(body, "kanal3", val)) {
       if ((val == 255 || (val >= 0 && val <= 95)) && val != Ausgang_Kanal3[ch]) {
         Ausgang_Kanal3[ch] = val;
         changed = true;
       }
     }
-    if (jsonExtractInt(body, "pwm3", val)) {
+    if (webJsonInt(body, "pwm3", val)) {
       bool validPwm = (val >= 0 && val <= 255) || (val >= 300 && val <= 315);
       if (validPwm && val != pwm_wert3[ch]) {
         pwm_wert3[ch] = val;
         changed = true;
       }
     }
-    if (jsonExtractInt(body, "mode3", val)) {
+    if (webJsonInt(body, "mode3", val)) {
       val = constrain(val, 0, 0xFFFF);
       if (val != mode3[ch]) {
         mode3[ch] = val;
@@ -1597,7 +1497,7 @@ static void handleOutput() {
     }
 
     String nm;
-    if (jsonExtractString(body, "name", nm)) {
+    if (webJsonString(body, "name", nm)) {
       nm = nm.substring(0, 16);
       if (strncmp(Ausgang_Name[ch], nm.c_str(), 16) != 0) {
         strncpy(Ausgang_Name[ch], nm.c_str(), 16);
@@ -1652,94 +1552,9 @@ static void handleWifi() {
     if (!webServer.hasArg("plain")) { send404(); return; }
     String body = webServer.arg("plain");
     bool enable = false;
-    if (!jsonExtractBool(body, "enable", enable)) { send404(); return; }
+    if (!webJsonBool(body, "enable", enable)) { send404(); return; }
     if (enable) webui_enableAP(); else webui_disableAP();
     sendOk();
-}
-
-// ============================================================
-//  API: /api/otaupdate  (NEU v2.00, uebernommen aus dem Soundmodul-Projekt)
-// ============================================================
-// Firmware-Update direkt per WLAN: .bin-Datei per multipart/form-data hoch-
-// laden, wird ueber die Arduino-"Update"-Bibliothek in das gerade INAKTIVE
-// OTA-Flash-Segment geschrieben (ota_0/ota_1 - siehe README, Abschnitt
-// "Partitionsschema"). Die aktuell laufende Firmware liegt im jeweils
-// ANDEREN Segment und bleibt waehrend des gesamten Uploads unangetastet:
-// schlaegt der Upload fehl oder wird er abgebrochen, bootet das Modul beim
-// naechsten Start einfach mit der bisherigen Firmware weiter (kein Bricking-
-// Risiko durch einen misslungenen Upload). Zwei-Handler-Muster wie beim
-// ESP32 WebServer fuer Datei-Uploads ueblich: handleOtaUpdateData() wird
-// waehrend des Uploads mehrfach aufgerufen (Callback-Argument von
-// webServer.on()), handleOtaUpdate() genau einmal danach fuer die Antwort.
-static bool     otaFailed  = false;
-static String   otaErrCode;
-static uint32_t otaBytes   = 0;
-static bool     otaStarted = false;
-
-static void handleOtaUpdateData() {
-    HTTPUpload& upload = webServer.upload();
-
-    if (upload.status == UPLOAD_FILE_START) {
-        otaFailed = false; otaErrCode = ""; otaBytes = 0; otaStarted = false;
-        Serial.printf("[OTA] Start: %s\n", upload.filename.c_str());
-        // Bei multipart/form-data ist die Gesamtgroesse vorab nicht bekannt -
-        // UPDATE_SIZE_UNKNOWN laesst die Bibliothek bis zum Ende des jeweiligen
-        // OTA-Segments schreiben; die eigentliche Vollstaendigkeitspruefung
-        // passiert bei Update.end() unten.
-        if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
-            otaFailed = true; otaErrCode = "update_begin";
-            return;
-        }
-        otaStarted = true;
-
-    } else if (upload.status == UPLOAD_FILE_WRITE) {
-        if (otaFailed || !otaStarted) return; // vorheriger Fehler - Rest verwerfen
-        // Grobe Plausibilitaetspruefung am allerersten Haeppchen: jede gueltige
-        // ESP32-Firmware beginnt mit dem Magic-Byte 0xE9. Faengt eine versehent-
-        // lich falsche Datei (z.B. eine JSON-Konfigurationsdatei) frueh ab,
-        // statt sie komplett hochzuladen und erst bei Update.end() abzulehnen.
-        if (otaBytes == 0 && upload.currentSize > 0 && upload.buf[0] != 0xE9) {
-            otaFailed = true; otaErrCode = "bad_file";
-            return;
-        }
-        size_t written = Update.write(upload.buf, upload.currentSize);
-        otaBytes += written;
-        if (written != upload.currentSize) {
-            otaFailed = true; otaErrCode = "flash_write"; // z.B. Segment voll
-        }
-
-    } else if (upload.status == UPLOAD_FILE_END || upload.status == UPLOAD_FILE_ABORTED) {
-        if (upload.status == UPLOAD_FILE_ABORTED) { otaFailed = true; otaErrCode = "aborted"; }
-        if (otaStarted) {
-            if (otaFailed) {
-                Update.abort();
-            } else if (!Update.end(true)) {
-                // "true" = neue Partition als bootfaehig markieren, aber nur wenn
-                // die empfangenen Bytes vollstaendig sind - schlaegt z.B. an, wenn
-                // die Datei kein vollstaendiges Firmware-Image ist oder mitten in
-                // der Uebertragung abgebrochen wurde, ohne dass ABORTED erkannt wird.
-                otaFailed = true; otaErrCode = "update_end";
-            } else {
-                Serial.printf("[OTA] Fertig: %u Bytes\n", (unsigned)otaBytes);
-            }
-        }
-    }
-}
-
-// Wird einmal aufgerufen, NACHDEM der Upload-Callback oben fertig ist -
-// schickt die JSON-Antwort und startet das Modul bei Erfolg neu. Die
-// Antwort wird per flush() explizit hinausgeschickt und dann kurz gewartet,
-// damit sie den Browser noch erreicht, BEVOR der Neustart die WLAN-
-// Verbindung (kurzzeitig) abbrechen laesst.
-static void handleOtaUpdate() {
-    if (otaFailed) {
-        webServer.send(200, "application/json", "{\"ok\":false,\"error\":\"" + otaErrCode + "\"}");
-        return;
-    }
-    sendJson("{\"ok\":true,\"size\":" + String(otaBytes) + "}");
-    webServer.client().flush();
-    delay(500);
-    ESP.restart();
 }
 
 // ============================================================
@@ -1802,7 +1617,8 @@ void webui_init() {
     webServer.on("/api/restart", HTTP_POST, handleRestart);
     webServer.on("/api/save",    HTTP_POST, handleSave);
     webServer.on("/api/wifi",    HTTP_POST, handleWifi);
-    webServer.on("/api/otaupdate", HTTP_POST, handleOtaUpdate, handleOtaUpdateData);
+    // v4.05: /api/otaupdate, /rc_common.js, /api/uartroles aus RC_Common
+    webCommonRegister(webServer, storageSave);
     // WebServer.begin() bewusst unabhaengig vom AP-Status: der Server lauscht
     // so schon, sobald der AP spaeter per Auto-Failsafe/manuell aktiviert wird
     // (kein erneutes .begin() noetig).
