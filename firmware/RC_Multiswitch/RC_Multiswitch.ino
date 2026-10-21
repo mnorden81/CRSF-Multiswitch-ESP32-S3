@@ -1,5 +1,5 @@
 /*
-    RC-Multiswitch  v4.03  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
+    RC-Multiswitch  v4.04  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
    v4.00 abgezweigt von ESP32-MultiSwitch v3.12 (Repo ESP32-Multiswitch-
    CRSF-bidirektional, MultiSwitch_ESP32_V3). Gleicher Quellcode fuer beide
    Platinen, Board-Auswahl in board_config.h.
@@ -31,6 +31,22 @@
    3 = HoTT           (SBUS)
    4 = CRSF           (ExpressLRS / TBS CrossFire, bidirektional)
  Lua-Konfiguration und (ab Schritt 3) Modulkette gibt es nur bei CRSF.
+
+ ÄNDERUNGEN v4.04:
+   - NEU: Rolle von UART B (C3/S3) und UART C (nur S3) waehlbar, wie beim
+     Soundmodul: Aus, CRSF (Modulkette), S.Port (FrSky FLVSS/MLVSS
+     LiPo-Sensoren) oder GPS (NMEA). Einstellbar im Lua-Menue (Ordner
+     "UART B/C", Felder 81-84) und in der Web-UI (RC-Tab). Wirkt nach einem
+     Neustart. Default CRSF auf beiden Ports = Verhalten wie bis v4.03.
+   - S.Port und GPS laufen nur auf einem Port: bei doppelter Wahl bleibt
+     UART C aus (Hinweis in der Web-UI).
+   - Bei CRSF gehen Zellspannungen (Frame 0x0E) und GPS (Frame 0x02) als
+     Telemetrie an den Empfaenger, alle 100 ms. Bei SBUS werden S.Port und
+     GPS nur gelesen (Anzeige im Debug-Tab), CRSF auf B/C ist dort aus.
+   - sport_lipo.cpp/.h und gps_speed.cpp/.h aus dem Soundmodul Mini
+     uebernommen. Neue Bibliothek: TinyGPSPlus.
+   - Neue NVS-Schluessel "pbrole", "pcrole", "gpsbaud" (fehlen sie, gilt
+     CRSF/CRSF/9600).
 
  ÄNDERUNGEN v4.03:
    - FIX: SBUS-Zeitlimit. Kommen 10 s lang gar keine SBUS-Frames mehr
@@ -221,6 +237,7 @@
 /*
   Bolder Flight Systems SBUS  8.1.4   (für RC_System 0-3)
   CRSF_ESP32  Ziege-One               (für RC_System 4)
+  TinyGPSPlus 1.0.3                   (v4.04: Rolle GPS auf UART B/C)
     https://github.com/Ziege-One/CRSF_ESP32
 */
 
@@ -231,8 +248,10 @@
 #include "sbus.h"
 #include "crsf_esp32.h"
 #include "blink_presets.h"
+#include "sport_lipo.h"   // v4.04: Rolle S.Port
+#include "gps_speed.h"    // v4.04: Rolle GPS
 
-constexpr uint16_t Version = 403; // 4.03 - CRSF Parameter Version Number
+constexpr uint16_t Version = 404; // 4.04 - CRSF Parameter Version Number
 
 // ======== SBUS-Schwellen (benannte Konstanten) ==================
 static constexpr uint16_t SBUS_LOW_THRESHOLD  =  800;
@@ -298,6 +317,42 @@ CRSF crsf;
 
 uint16_t channel_output[16] = {};
 bool     BUS_OK              = false;
+
+// ======== UART B/C: waehlbare Rolle (NEU v4.04) =================
+// Wie beim Soundmodul: jeder Zusatz-UART bekommt eine Rolle. UART A bleibt
+// fest der RC-Eingang (CRSF oder SBUS). Werte als int (kein eigenes enum
+// als Rueckgabetyp, Arduino-Prototyp-Generator).
+static constexpr int UROLE_OFF   = 0;
+static constexpr int UROLE_CRSF  = 1;   // Modulkette (CRSF-Router), nur bei RC_System 4
+static constexpr int UROLE_SPORT = 2;   // FrSky FLVSS/MLVSS, siehe sport_lipo.h
+static constexpr int UROLE_GPS   = 3;   // NMEA-GPS, siehe gps_speed.h
+static constexpr int UROLE_ROLE_COUNT = 4;
+static const char* const UROLE_ROLE_OPTIONS = "Aus;CRSF;S.Port;GPS";
+static const uint32_t GPS_BAUD_LIST[] = {9600, 19200, 38400, 57600, 115200};
+static constexpr uint8_t GPS_BAUD_COUNT = 5;
+static const char* const GPS_BAUD_OPTIONS = "9600;19200;38400;57600;115200";
+
+int      g_portb_role = UROLE_CRSF;      // NVS "pbrole"
+int      g_portc_role = UROLE_CRSF;      // NVS "pcrole", nur S3 wirksam
+uint32_t g_gps_baud   = 9600;           // NVS "gpsbaud"
+uint8_t  g_sport_poll_id[2] = {0xA1, 0x22};   // Werkseinstellung FLVSS 1/2
+// Stand beim Booten (Aenderungen wirken erst nach Neustart)
+int      g_portb_role_boot = UROLE_OFF;
+int      g_portc_role_boot = UROLE_OFF;
+bool     g_portc_duplicate = false;     // UART C wegen doppelter Rolle aus
+
+static const char* portRoleName(int r) {
+    switch (r) {
+        case UROLE_CRSF:  return "CRSF";
+        case UROLE_SPORT: return "S.Port";
+        case UROLE_GPS:   return "GPS";
+        default:         return "Aus";
+    }
+}
+static uint8_t gpsBaudToIndex(uint32_t baud) {
+    for (uint8_t i = 0; i < GPS_BAUD_COUNT; i++) if (GPS_BAUD_LIST[i] == baud) return i;
+    return 0;
+}
 
 // ======== CRSF-Timeout ==========================================
 // v0.14: auf 2000 ms erhöht – robuster bei kurzen Unterbrechungen
@@ -416,6 +471,9 @@ static void nvsWriteNow() {
     p.putBool("wauto",  g_wifi_auto);         // NEU v2.00
     p.putUInt("watout", g_wifi_auto_timeout); // NEU v2.00
     p.putBool("walways", g_wifi_always_on);   // NEU v2.02
+    p.putInt("pbrole",  g_portb_role);        // NEU v4.04
+    p.putInt("pcrole",  g_portc_role);        // NEU v4.04
+    p.putUInt("gpsbaud", g_gps_baud);         // NEU v4.04
     p.end();
     nvsDirty = false;
     nvsSaveScheduled = false;
@@ -490,6 +548,12 @@ static void nvsLoad() {
     // Migrations-Default seit v2.02 bewusst true - siehe Kommentar bei
     // g_wifi_always_on weiter oben.
     g_wifi_always_on = p.getBool("walways", true);    // NEU v2.02
+    // NEU v4.04: Rollen UART B/C, Default CRSF = Verhalten bis v4.03
+    g_portb_role = p.getInt("pbrole", UROLE_CRSF);
+    g_portc_role = p.getInt("pcrole", UROLE_CRSF);
+    if (g_portb_role < 0 || g_portb_role >= UROLE_ROLE_COUNT) g_portb_role = UROLE_CRSF;
+    if (g_portc_role < 0 || g_portc_role >= UROLE_ROLE_COUNT) g_portc_role = UROLE_CRSF;
+    g_gps_baud = GPS_BAUD_LIST[gpsBaudToIndex(p.getUInt("gpsbaud", 9600))];
     p.end();
     nvsDirty = false;
     nvsSaveScheduled = false;
@@ -514,6 +578,7 @@ static void nvsReset() {
     strncpy(g_device_name, "MultiSwitch", sizeof(g_device_name)-1);  // NEU V1.4
     g_wifi_auto = true; g_wifi_auto_timeout = 60;    // NEU v2.00, Default AN seit v2.01
     g_wifi_always_on = true;                         // NEU v2.02
+    g_portb_role = UROLE_CRSF; g_portc_role = UROLE_CRSF; g_gps_baud = 9600;  // NEU v4.04
     nvsSave();
     nvsFlushPending();
 }
@@ -780,8 +845,14 @@ static void einkanalFunctionSBUSGroup(uint8_t g, uint16_t channel) {
 //   79: U8   "Auto Timeout"   5-240 s  -> g_wifi_auto_timeout
 //   80: Sel  "Dauerhaft an"   Aus;Ein  -> g_wifi_always_on
 // Total: 5+8*9+4=81 Parameter (0..80)
+// UART B/C (NEU v4.04), ebenfalls angehaengt:
+//   81: Folder "UART B/C"     (Kinder 82,83,84)
+//   82: Sel  "UART B"         Aus;CRSF;S.Port;GPS -> g_portb_role
+//   83: Sel  "UART C"         wie 82 (S3), Info beim C3 -> g_portc_role
+//   84: Sel  "GPS Baud"       9600..115200        -> g_gps_baud
+// Total: 85 Parameter (0..84)
 
-static constexpr uint8_t CRSF_PARAM_COUNT = 80;
+static constexpr uint8_t CRSF_PARAM_COUNT = 84;
 
 // ── CRSF-Geraeteadresse + Ping-Slot aus der WM-Adresse (uebernommen aus Soundmodul v1.24) ──
 // Adresse = 0xC0 + modul_adress; Slot = (Adresse-0xC0)*2; Antwort erst im eigenen
@@ -831,9 +902,9 @@ static void crsfSendParam(uint8_t idx) {
 
     if (idx == 0) {
         crsf.send_param_response_CRSF_FOLDER(0, 0, "",
-            {1,2,5,14,23,32,41,50,59,68,77});
+            {1,2,5,14,23,32,41,50,59,68,77,81});
     } else if (idx == 1) {
-        crsf.send_param_response_CRSF_INFO(1, 0, "Version", "v4.03 " BOARD_NAME);
+        crsf.send_param_response_CRSF_INFO(1, 0, "Version", "v4.04 " BOARD_NAME);
     } else if (idx == 2) {
         crsf.send_param_response_CRSF_FOLDER(2, 0, "Global", {3,4});
     } else if (idx == 3) {
@@ -927,6 +998,25 @@ static void crsfSendParam(uint8_t idx) {
         crsf.send_param_response_CRSF_TEXT_SELECTION(80, 77,
             "Dauerhaft an", "Aus;Ein",
             g_wifi_always_on ? 1 : 0, 0, 1);
+    } else if (idx == 81) {
+        // NEU v4.04: Rollen der Zusatz-UARTs, an die Root angehaengt
+        crsf.send_param_response_CRSF_FOLDER(81, 0, "UART B/C", {82,83,84});
+    } else if (idx == 82) {
+        crsf.send_param_response_CRSF_TEXT_SELECTION(82, 81,
+            "UART B (Neustart)", UROLE_ROLE_OPTIONS,
+            (uint8_t)g_portb_role, 0, UROLE_ROLE_COUNT - 1);
+    } else if (idx == 83) {
+#if defined(UART_C_SERIAL)
+        crsf.send_param_response_CRSF_TEXT_SELECTION(83, 81,
+            "UART C (Neustart)", UROLE_ROLE_OPTIONS,
+            (uint8_t)g_portc_role, 0, UROLE_ROLE_COUNT - 1);
+#else
+        crsf.send_param_response_CRSF_INFO(83, 81, "UART C", "nicht vorhanden (C3)");
+#endif
+    } else if (idx == 84) {
+        crsf.send_param_response_CRSF_TEXT_SELECTION(84, 81,
+            "GPS Baud (Neustart)", GPS_BAUD_OPTIONS,
+            gpsBaudToIndex(g_gps_baud), 0, GPS_BAUD_COUNT - 1);
     }
 }
 
@@ -1000,6 +1090,15 @@ static void crsfWriteParam(uint8_t idx, uint8_t val) {
         // heraus ist unnoetiges Risiko, da der AP durch den Default "an"
         // beim Booten ohnehin schon laeuft.
         g_wifi_always_on = (val != 0); nvsSave();
+    } else if (idx == 82) {
+        // NEU v4.04: wirkt erst nach Neustart (UARTs werden in setup() belegt)
+        if (val < UROLE_ROLE_COUNT) { g_portb_role = val; nvsSave(); }
+    } else if (idx == 83) {
+#if defined(UART_C_SERIAL)
+        if (val < UROLE_ROLE_COUNT) { g_portc_role = val; nvsSave(); }
+#endif
+    } else if (idx == 84) {
+        if (val < GPS_BAUD_COUNT) { g_gps_baud = GPS_BAUD_LIST[val]; nvsSave(); }
     }
 }
 
@@ -1201,12 +1300,55 @@ static void Output(uint16_t d) {
     }
 }
 
+// ======== UART B/C starten (NEU v4.04) ===========================
+// CRSF startet der Router in setup(), hier nur S.Port und GPS.
+static void startPort(const char* name, int role, HardwareSerial* ser, uint8_t rx, uint8_t tx) {
+    if (role == UROLE_SPORT)    sportLipoInit(ser, rx, tx, SPORT_BAUD);
+    else if (role == UROLE_GPS) gpsSpeedInit(ser, rx, tx, g_gps_baud);
+    const bool idle = (role == UROLE_CRSF && RC_System_boot != 4);
+    Serial.printf("UART %s: %s%s (RX=%d TX=%d)\n", name, portRoleName(role),
+                  idle ? " - nur bei RC-System CRSF aktiv" : "", rx, tx);
+}
+
+// Telemetrie an den Empfaenger (nur CRSF): Zellspannungen (0x0E) und GPS
+// (0x02), wie beim Soundmodul alle 100 ms. Kein Batterie-Frame (0x08),
+// sonst wuerde die vom Empfaenger gemessene RxBt ueberschrieben.
+static void sendPortTelemetry() {
+    static unsigned long lastTelem = 0;
+    if (millis() - lastTelem < 100) return;
+    lastTelem = millis();
+    if (sportLipoIsActive()) {
+        if (lipoSensor[0].online) sportSendCellsTelemetry(0);
+        if (lipoSensor[1].online) sportSendCellsTelemetry(1);
+    }
+    if (gpsIsActive()) {
+        uint16_t gspd = (uint16_t)(gpsGetSpeedKmh() * 10.0f);   // CRSF: km/h * 10
+        crsf.send_tele_GPS(gpsGetLatE7(), gpsGetLonE7(), gspd,
+                           gpsGetHeadingCdeg(), gpsGetAltMeters(), gpsGetSatellites());
+    }
+}
+
 // ======== Setup =================================================
 void setup() {
     Serial.begin(115200);
     nvsLoad();
 
     RC_System_boot = RC_System;
+
+    // v4.04: Rollen UART B/C fuer diesen Lauf festhalten. S.Port und GPS
+    // haben nur einen Zustand und laufen deshalb nur auf einem Port: bei
+    // doppelter Wahl bleibt UART C aus.
+    g_portb_role_boot = g_portb_role;
+#if defined(UART_C_SERIAL)
+    g_portc_role_boot = g_portc_role;
+    if (g_portc_role_boot == g_portb_role_boot &&
+        (g_portc_role_boot == UROLE_SPORT || g_portc_role_boot == UROLE_GPS)) {
+        g_portc_role_boot = UROLE_OFF;
+        g_portc_duplicate = true;
+    }
+#else
+    g_portc_role_boot = UROLE_OFF;
+#endif
 
     if (RC_System_boot == 4) {
         // v4.00: CRSF auf UART A (UART0), Pins siehe board_config.h
@@ -1215,21 +1357,28 @@ void setup() {
         Serial.printf("CRSF gestartet (Board %s, RX=%d, TX=%d, 420000 Bd)  Geraeteadresse 0x%02X  Slot %d\n",
                       BOARD_NAME, UART_A_RX, UART_A_TX,
                       crsfAddrFromWM(), (uint8_t)constrain(modul_adress,0,15)*2);
-        // v4.01: Router auf UART B (und C beim S3) fuer die Modulkette
+        // v4.01: Router fuer die Modulkette, v4.04: nur auf den UARTs mit
+        // Rolle CRSF (B, beim S3 auch C)
+        HardwareSerial* rb = (g_portb_role_boot == UROLE_CRSF) ? &UART_B_SERIAL : nullptr;
 #if defined(UART_C_SERIAL)
-        crsf.init_router(&UART_B_SERIAL, UART_B_RX, UART_B_TX,
-                         &UART_C_SERIAL, UART_C_RX, UART_C_TX);
-        Serial.printf("Router aktiv: UART B RX=%d TX=%d, UART C RX=%d TX=%d\n",
-                      UART_B_RX, UART_B_TX, UART_C_RX, UART_C_TX);
+        HardwareSerial* rc = (g_portc_role_boot == UROLE_CRSF) ? &UART_C_SERIAL : nullptr;
+        crsf.init_router(rb, UART_B_RX, UART_B_TX, rc, UART_C_RX, UART_C_TX);
 #else
-        crsf.init_router(&UART_B_SERIAL, UART_B_RX, UART_B_TX, nullptr, 0, 0);
-        Serial.printf("Router aktiv: UART B RX=%d TX=%d\n", UART_B_RX, UART_B_TX);
+        crsf.init_router(rb, UART_B_RX, UART_B_TX, nullptr, 0, 0);
 #endif
     } else {
         sbus_rx.Begin();   // v4.00: ebenfalls UART A
         Serial.printf("SBUS gestartet (Board %s, RX=%d, RC-System=%d)\n",
                       BOARD_NAME, UART_A_RX, RC_System_boot);
     }
+
+    // v4.04: S.Port und GPS auf UART B/C (CRSF startet oben im Router)
+    startPort("B", g_portb_role_boot, &UART_B_SERIAL, UART_B_RX, UART_B_TX);
+#if defined(UART_C_SERIAL)
+    startPort("C", g_portc_role_boot, &UART_C_SERIAL, UART_C_RX, UART_C_TX);
+    if (g_portc_duplicate)
+        Serial.println("UART C aus: gleiche Rolle wie UART B (S.Port/GPS nur einmal)");
+#endif
 
     for (int i = 0; i < 8; i++) {
         if (OutPwm[i]) {
@@ -1257,6 +1406,8 @@ void loop() {
     nvsProcessPending();
     wifiFailsafeCheck(); // NEU v2.00 - unbedingt am Loop-Anfang, damit auch der SBUS-Failsafe-Fruehausstieg unten ihn nicht ueberspringt
     bootButtonCheck();   // NEU v4.01 - aus demselben Grund am Loop-Anfang
+    sportLipoUpdate();   // NEU v4.04 - tut nichts, wenn kein Port S.Port hat
+    gpsSpeedUpdate();    // NEU v4.04 - tut nichts, wenn kein Port GPS hat
 
     if (RC_System_boot == 4) {
         crsf.read_packets(0);
@@ -1277,6 +1428,7 @@ void loop() {
             lastCrsfPacket = millis();
         }
         checkCrsfTimeout();
+        sendPortTelemetry();   // v4.04: S.Port/GPS an den Empfaenger
 
         // Kein Telemetrie-Dummy: DEVICE_PING / LUA-Pakete werden durch
         // device_info und param-Antworten sichergestellt (keine Dummy-Daten noetig)

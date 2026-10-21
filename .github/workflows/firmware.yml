@@ -28,6 +28,7 @@ jobs:
           arduino-cli core update-index
           arduino-cli core install esp32:esp32@3.0.7
           arduino-cli lib install "Bolder Flight Systems SBUS@8.1.4"
+          arduino-cli lib install "TinyGPSPlus@1.0.3"
       - name: Kompilieren (${{ matrix.board }})
         run: |
           arduino-cli compile --fqbn "${{ matrix.fqbn }}" --warnings default \
