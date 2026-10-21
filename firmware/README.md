@@ -1,4 +1,4 @@
-# Firmware RC-Multiswitch v4.02
+# Firmware RC-Multiswitch v4.03
 
 Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis ist MultiSwitch_ESP32_V3 v3.12. Spezifikation: `docs/Firmware-Spezifikation.md`.
 
@@ -26,5 +26,5 @@ Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis is
 - Frames gehen ganz und unveraendert weiter (CRC geprueft). Je Port eine Warteschlange mit 8 Frames; bei Ueberlauf werden zuerst alte RC-Kanal-Frames verworfen.
 
 ## Stand
-- v4.02 kompiliert fuer C3 und S3 (CI). v4.02: CRSF-Link-Statistik (LQ) korrigiert. Noch nicht auf Hardware getestet.
+- v4.03 kompiliert fuer C3 und S3 (CI). v4.02: CRSF-Link-Statistik (LQ) korrigiert. v4.03: SBUS-Zeitlimit 10 s (ohne Frames gehen die Ausgaenge aus). Noch nicht auf Hardware getestet.
 - Offen: Abnahmetest nach Kapitel 8 der Spezifikation (1, 2 und 3 Module), C3-Strapping-Pin IO2 (Kanal 3) beim ersten Boot pruefen.
