@@ -32,7 +32,7 @@
    4 = CRSF           (ExpressLRS / TBS CrossFire, bidirektional)
  Lua-Konfiguration und (ab Schritt 3) Modulkette gibt es nur bei CRSF.
 
- ÄNDERUNGEN v4.05 (gemeinsame Basis RC_Common 1.0.0):
+ ÄNDERUNGEN v4.05 (gemeinsame Basis RC_Common 1.1.0):
    - Gemeinsamer Code aller ESP32-Module liegt jetzt in src/RC_Common/
      (identische Kopie in jedem Projekt, siehe src/RC_Common/README.md):
      CRSF-Bibliothek 1.1.0 (mit Router), UART-Rollen, S.Port, GPS,
@@ -44,6 +44,13 @@
    - UART B/C: neue Rolle "Raw" (UART offen, keine Auswertung) und eine
      Baudrate je UART (Lua-Felder 84/85, Web-UI). Rollennummern bleiben
      (0 Aus, 1 CRSF, 2 S.Port, 3 GPS, 4 Raw). Feld 84 war "GPS Baud".
+   - NEU: Baudrate "Auto" (RC_Common 1.1.0), Vorgabe fuer GPS: der UART
+     sucht die Baudrate des GPS selbst (9600/115200/38400/57600/19200),
+     stellt es auf 115200 Baud und 10 Hz um (ATGM336H und u-blox) und
+     sucht neu, wenn 3 s keine Daten kommen. Bisher eingestellte GPS-
+     Baudraten werden einmalig auf "Auto" gesetzt. Bei den anderen Rollen
+     heisst "Auto" die Protokoll-Baudrate (CRSF 420000, S.Port 57600,
+     Raw 115200).
    - Lua-Menue als Tabelle (buildLuaMenu()), gleiche Feld-IDs 0-83.
    - NVS: gemeinsame Schluessel wip, madr, wfauto, wftmo, wfalways,
      u1role, u1baud, u2role, u2baud (RC_Common settings_common.h). Beim
@@ -258,7 +265,7 @@
 /*
   Bolder Flight Systems SBUS  8.1.4   (für RC_System 0-3)
   TinyGPSPlus 1.0.3                   (v4.04: Rolle GPS auf UART B/C)
-  RC_Common 1.0.0 im Sketch-Ordner src/RC_Common/ (v4.05), enthaelt
+  RC_Common 1.1.0 im Sketch-Ordner src/RC_Common/ (v4.05), enthaelt
     CRSF_ESP32 1.1.0, Basis https://github.com/Ziege-One/CRSF_ESP32
 */
 
@@ -842,7 +849,7 @@ static void einkanalFunctionSBUSGroup(uint8_t g, uint16_t channel) {
 //   81: Folder "UART B/C"     (Kinder 82,83,84)
 //   82: Sel  "UART B"         Aus;CRSF;S.Port;GPS;Raw -> g_port_role[0]
 //   83: Sel  "UART C"         wie 82 (S3), Info beim C3 -> g_port_role[1]
-//   84: Sel  "UART B Baud"    9600..420000 (v4.05, vorher "GPS Baud")
+//   84: Sel  "UART B Baud"    Auto;9600..420000 (v4.05, vorher "GPS Baud")
 //   85: Sel  "UART C Baud"    wie 84 (S3), Info beim C3
 // Total: 86 Parameter (0..85), Tabelle siehe buildLuaMenu()
 

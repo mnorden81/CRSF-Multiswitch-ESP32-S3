@@ -847,13 +847,9 @@ async function onEkChange(){
 }
 
 // CRSF Modul-Adresse
-// v4.05: Baudraten-Auswahl (Liste aus /rc_common.js, eigener Wert bleibt erhalten)
-function fillBaud(sel,cur){
-  const l=RC_BAUDS.split(';');
-  if(cur&&l.indexOf(String(cur))<0) l.push(String(cur));
-  sel.innerHTML=l.map(b=>`<option value="${b}">${b}</option>`).join('');
-  sel.value=String(cur);
-}
+// v4.05: Baudraten-Auswahl (Liste aus /rc_common.js mit "Auto", eigener
+// Wert bleibt erhalten)
+function fillBaud(sel,cur){ rcFillBaud(sel,cur); }
 // NEU v4.04: Rolle UART B/C speichern, wirkt nach Neustart. v4.05: neue
 // Rolle schlaegt ihre Baudrate vor (Raw/Aus behalten die bisherige).
 async function onPortChange(){
@@ -1114,6 +1110,15 @@ static void send404() { webServer.send(404,"application/json","{\"error\":\"not 
 // ============================================================
 //  RC-System-Name
 // ============================================================
+// v4.05: Rolle und Baudrate eines UARTs fuer den Debug-Tab, GPS mit "Auto"
+static String portStateText(const UartPort& p) {
+  String t = uartRoleName(p.activeRole);
+  if (p.activeRole == UROLE_OFF) return t;
+  if (p.activeRole == UROLE_GPS && gpsBaudAuto())
+    return t + " Auto " + (gpsBaudLocked() ? String(gpsGetBaud()) : String("(sucht)"));
+  return t + " " + String(p.baud);
+}
+
 static const char* rcName(int sys) {
     switch(sys) {
         case 0: return "FrSky SBUS";
@@ -1192,8 +1197,8 @@ static void handleStatus() {
     j += "},";
     // NEU v4.04: UART B/C (Stand beim Booten) + S.Port/GPS-Daten
     j += "\"ports\":{";
-    j += "\"b\":\"" + String(uartRoleName(g_ports[0].activeRole)) + " " + String(g_ports[0].baud) + "\",";
-    j += "\"c\":\"" + String(uartRoleName(g_ports[1].activeRole)) + " " + String(g_ports[1].baud) + "\",";
+    j += "\"b\":\"" + portStateText(g_ports[0]) + "\",";
+    j += "\"c\":\"" + portStateText(g_ports[1]) + "\",";
 #if defined(UART_C_SERIAL)
     j += "\"has_c\":true,";
 #else
@@ -1334,7 +1339,7 @@ static void handleConfig() {
       if (webJsonInt(body, roleKey[i], v) && v >= 0 && v < UROLE_COUNT && v != g_port_role[i]) {
         setPortRole(i, (uint8_t)v); changed = true;
       }
-      if (webJsonInt(body, baudKey[i], v) && v >= 1200 && v <= 2000000 && (uint32_t)v != g_port_baud[i]) {
+      if (webJsonInt(body, baudKey[i], v) && v > 0 && uartBaudValid((uint32_t)v) && (uint32_t)v != g_port_baud[i]) {
         g_port_baud[i] = (uint32_t)v; changed = true;
       }
     }
