@@ -1,5 +1,8 @@
 /*
- * webui.h  –  WiFi-Weboberfläche für RC-Multiswitch C3/S3  v4.03
+ * webui.h  –  WiFi-Weboberfläche für RC-Multiswitch C3/S3  v4.04
+ * NEU v4.04: Karte "UART B/C" im RC-Tab (Rolle Aus/CRSF/S.Port/GPS) und
+ * Anzeige von S.Port/GPS im Debug-Tab. UROLE_*, g_port*_role, g_gps_baud
+ * stehen in RC_Multiswitch.ino vor dem Include dieser Datei.
  * NEU V3.00: MKan-Gruppen (2 zusaetzliche, unabhaengige Kanalquellen) -
  * siehe Kommentar bei MULTISW_NUM_GROUPS in MultiSwitch_ESP32_V3.ino.
  * NEU V3.10: bis zu 3 Konfigurationen (Kanal-Quelle + Blink/PWM) pro
@@ -368,6 +371,27 @@ main{max-width:560px;margin:0 auto;padding:20px 14px 60px}
       </div>
       <span style="color:var(--sub);font-size:12px;display:block;margin-top:6px">Zusaetzlich zur Einzelkanal-Adresse oben: bis zu 16 weitere, unabhaengige Trigger-Bits fuer die Ausgangs-Kanalquelle "MKan1"/"MKan2".</span>
     </div>
+
+    <!-- UART B/C (NEU v4.04): Rolle je Zusatz-UART, wie beim Soundmodul -->
+    <div class="card">
+      <div class="card-title">UART B/C (NEU v4.04)</div>
+      <div class="row"><label>UART B</label>
+        <select id="sel-portb" onchange="onPortChange()"></select>
+      </div>
+      <div class="row" id="row-portc"><label>UART C</label>
+        <select id="sel-portc" onchange="onPortChange()"></select>
+      </div>
+      <div class="row"><label>GPS Baudrate</label>
+        <select id="sel-gpsbaud" onchange="onPortChange()">
+          <option value="9600">9600</option><option value="19200">19200</option>
+          <option value="38400">38400</option><option value="57600">57600</option>
+          <option value="115200">115200</option>
+        </select>
+      </div>
+      <span style="color:var(--yellow);font-size:12px;display:none;margin-top:6px" id="portc-dup">UART C ist aus: S.Port und GPS laufen nur auf einem Port.</span>
+      <span style="color:var(--sub);font-size:12px;display:block;margin-top:6px">CRSF = Modulkette zum naechsten Modul. S.Port = FrSky LiPo-Sensoren (FLVSS/MLVSS), GPS = NMEA-Empfaenger. Bei CRSF gehen Zellspannungen und GPS als Telemetrie an den Sender. Wirkt nach einem Neustart.</span>
+      <span style="font-size:12px;display:block;margin-top:6px" id="port-hint"></span>
+    </div>
   </div>
 
   <!-- WiFi -->
@@ -444,6 +468,10 @@ main{max-width:560px;margin:0 auto;padding:20px 14px 60px}
     <div class="card">
       <div class="card-title">CRSF-Diagnose (NEU v2.00)</div>
       <div id="crsf-diag-body" class="mono" style="line-height:1.8"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">UART B/C (NEU v4.04)</div>
+      <div id="port-diag-body" class="mono" style="line-height:1.8"></div>
     </div>
     <div class="card">
       <div class="card-title">MWprop-Kanalwerte</div>
@@ -742,6 +770,16 @@ async function fetchConfig(){
   $('inp-wifi-auto-to').value=d.wifi_auto_timeout;
   $('sel-wifi-always').value=d.wifi_always_on?1:0;
   updateWifiAlwaysOnHint();
+  // NEU v4.04: UART B/C
+  const roles=(d.port_roles||'Aus').split(';');
+  ['sel-portb','sel-portc'].forEach(id=>{
+    $(id).innerHTML=roles.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
+  });
+  $('sel-portb').value=d.portb_role;
+  $('sel-portc').value=d.portc_role;
+  $('sel-gpsbaud').value=d.gps_baud;
+  $('row-portc').style.display=d.has_portc?'':'none';
+  $('portc-dup').style.display=d.portc_dup?'block':'none';
   updateRcRows(d.rc_system, ek);
   window._rcBoot=parseInt(d.rc_system);
 }
@@ -809,6 +847,24 @@ async function onEkChange(){
 }
 
 // CRSF Modul-Adresse
+// NEU v4.04: Rolle UART B/C speichern, wirkt nach Neustart
+async function onPortChange(){
+  await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({portb_role:parseInt($('sel-portb').value),
+      portc_role:parseInt($('sel-portc').value),
+      gps_baud:parseInt($('sel-gpsbaud').value)})});
+  const h=$('port-hint');
+  h.innerHTML='Gespeichert, wirkt nach Neustart. <a href="#" onclick="restartForPorts();return false">Jetzt neu starten</a>';
+  h.style.color='var(--green)';
+}
+function restartForPorts(){
+  api('/api/restart',{method:'POST'});
+  let s=5; const h=$('port-hint'); h.style.color='var(--yellow)';
+  const t=setInterval(()=>{
+    h.textContent='Neustart… Verbinde in '+s+'s';
+    if(--s<0){clearInterval(t);window.location.reload();}
+  },1000);
+}
 async function onAdrChange(){
   await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({modul_adress:parseInt($('sel-adr').value)})});
@@ -932,7 +988,8 @@ async function importConfigData(data){
       rc_system:s.rc_system, crsf_channel:s.crsf_channel, einkanal_mode:s.einkanal_mode,
       modul_adress:s.modul_adress, dnam:s.dnam, ssid:s.ssid, pass:s.pass, ip:s.ip,
       wifi_auto:s.wifi_auto, wifi_auto_timeout:s.wifi_auto_timeout,
-      wifi_always_on:s.wifi_always_on
+      wifi_always_on:s.wifi_always_on,
+      portb_role:s.portb_role, portc_role:s.portc_role, gps_baud:s.gps_baud   // NEU v4.04
     })});
   for(const o of (data.outputs||[])){
     if(o.ch===undefined) continue;
@@ -1026,6 +1083,24 @@ async function pollDebug(){
     $('crsf-diag-body').innerHTML=ch;
   } else {
     $('crsf-diag-body').innerHTML='Keine Daten';
+  }
+
+  // NEU v4.04: UART B/C
+  if(d.ports){
+    const p=d.ports;
+    let ph2=`UART B: ${p.b}`+(p.has_c?` | UART C: ${p.c}`:'')+'<br>';
+    if(p.c_dup) ph2+='<b style="color:#c00">UART C aus: gleiche Rolle wie UART B</b><br>';
+    if(p.sport){
+      p.sport.forEach((s,i)=>{
+        ph2+=`LiPo ${i+1}: `+(s.online?`${s.cells}S, ${s.total.toFixed(2)} V, min. Zelle ${s.min.toFixed(2)} V`:'keine Antwort')+'<br>';
+      });
+      ph2+=`S.Port Polls: ${p.sport_polls}, Bytes: ${p.sport_bytes}, Frames: ${p.sport_frames}, CRC-Fehler: ${p.sport_crc}<br>`;
+    }
+    if(p.gps){
+      const g=p.gps;
+      ph2+=`GPS: ${g.fix?'Fix':'kein Fix'}, ${g.sats} Sat., ${g.kmh.toFixed(1)} km/h<br>`;
+    }
+    $('port-diag-body').innerHTML=ph2;
   }
 
   // MWprop
@@ -1221,6 +1296,36 @@ static void handleStatus() {
     j += "\"down_crc\":"    + String(crsf.getDownCrcErrors()) + ",";
     j += "\"dup_addr\":"    + String(crsf.isDuplicateAddress() ? "true" : "false");
     j += "},";
+    // NEU v4.04: UART B/C (Stand beim Booten) + S.Port/GPS-Daten
+    j += "\"ports\":{";
+    j += "\"b\":\"" + String(portRoleName(g_portb_role_boot)) + "\",";
+    j += "\"c\":\"" + String(portRoleName(g_portc_role_boot)) + "\",";
+#if defined(UART_C_SERIAL)
+    j += "\"has_c\":true,";
+#else
+    j += "\"has_c\":false,";
+#endif
+    j += "\"c_dup\":" + String(g_portc_duplicate ? "true" : "false");
+    if (sportLipoIsActive()) {
+        j += ",\"sport\":[";
+        for (int i = 0; i < SPORT_NUM_SENSORS; i++) {
+            if (i) j += ",";
+            j += "{\"online\":" + String(lipoSensor[i].online ? "true" : "false");
+            j += ",\"cells\":" + String(lipoSensor[i].cellCount);
+            j += ",\"total\":" + String(lipoSensor[i].totalVoltage, 2);
+            j += ",\"min\":"   + String(lipoSensor[i].minCell, 2) + "}";
+        }
+        j += "],\"sport_polls\":" + String(sportGetPollsSent());
+        j += ",\"sport_bytes\":"  + String(sportGetRawBytesRx());
+        j += ",\"sport_frames\":" + String(sportGetValidFrames());
+        j += ",\"sport_crc\":"    + String(sportGetCrcErrors());
+    }
+    if (gpsIsActive()) {
+        j += ",\"gps\":{\"fix\":" + String(gpsHasFix() ? "true" : "false");
+        j += ",\"sats\":" + String(gpsGetSatellites());
+        j += ",\"kmh\":"  + String(gpsGetSpeedKmh(), 1) + "}";
+    }
+    j += "},";
     j += "\"wifi_ap_active\":" + String(webui_isApActive() ? "true" : "false");
 
     j += "}";
@@ -1249,7 +1354,18 @@ static void handleConfig() {
       j += "\"ip\":\""          + jsonEscape(g_wifi_ip)      + "\",";
         j += "\"wifi_auto\":"      + String(g_wifi_auto ? "true" : "false") + ",";
         j += "\"wifi_auto_timeout\":" + String(g_wifi_auto_timeout) + ",";
-        j += "\"wifi_always_on\":" + String(g_wifi_always_on ? "true" : "false");
+        j += "\"wifi_always_on\":" + String(g_wifi_always_on ? "true" : "false") + ",";
+        // NEU v4.04: Rollen UART B/C
+        j += "\"port_roles\":\"" + String(UROLE_ROLE_OPTIONS) + "\",";
+        j += "\"portb_role\":" + String(g_portb_role) + ",";
+        j += "\"portc_role\":" + String(g_portc_role) + ",";
+        j += "\"gps_baud\":"   + String(g_gps_baud) + ",";
+#if defined(UART_C_SERIAL)
+        j += "\"has_portc\":true,";
+#else
+        j += "\"has_portc\":false,";
+#endif
+        j += "\"portc_dup\":" + String(g_portc_duplicate ? "true" : "false");
         j += "}";
         sendJson(j);
         return;
@@ -1315,6 +1431,17 @@ static void handleConfig() {
     // NEU v2.02: WLAN dauerhaft an
     if (jsonExtractBool(body, "wifi_always_on", bv)) {
       if (bv != g_wifi_always_on) { g_wifi_always_on = bv; changed = true; }
+    }
+    // NEU v4.04: Rollen UART B/C und GPS-Baudrate (wirken nach Neustart)
+    if (jsonExtractInt(body, "portb_role", v)) {
+      if (v >= 0 && v < UROLE_ROLE_COUNT && v != g_portb_role) { g_portb_role = v; changed = true; }
+    }
+    if (jsonExtractInt(body, "portc_role", v)) {
+      if (v >= 0 && v < UROLE_ROLE_COUNT && v != g_portc_role) { g_portc_role = v; changed = true; }
+    }
+    if (jsonExtractInt(body, "gps_baud", v)) {
+      uint32_t b = GPS_BAUD_LIST[gpsBaudToIndex((uint32_t)v)];
+      if (b == (uint32_t)v && b != g_gps_baud) { g_gps_baud = b; changed = true; }
     }
 
     String s;
