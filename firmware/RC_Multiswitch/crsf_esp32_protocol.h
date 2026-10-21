@@ -79,7 +79,8 @@
 #define CRSF_OUT_OF_RANGE 0x7F
 
 struct LinkStatistics {
-  uint8_t uplinkRSSI = 0;       // Sender → Empfänger RSSI (dBm)
+  uint8_t uplinkRSSI = 0;       // Sender → Empfänger RSSI Antenne 1 (dBm)
+  uint8_t uplinkRSSI2 = 0;      // Sender → Empfänger RSSI Antenne 2 (dBm), v4.02
   uint8_t uplinkLQ = 0;         // Link Quality (%)
   int8_t  uplinkSNR = 0;        // Signal-Rausch-Verhältnis (dB)
 
