@@ -237,7 +237,7 @@
 /*
   Bolder Flight Systems SBUS  8.1.4   (für RC_System 0-3)
   CRSF_ESP32  Ziege-One               (für RC_System 4)
-  TinyGPSPlus 1.1.0                   (v4.04: Rolle GPS auf UART B/C)
+  TinyGPSPlus 1.0.3                   (v4.04: Rolle GPS auf UART B/C)
     https://github.com/Ziege-One/CRSF_ESP32
 */
 

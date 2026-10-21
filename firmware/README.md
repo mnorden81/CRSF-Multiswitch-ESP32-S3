@@ -4,7 +4,7 @@ Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis is
 
 ## Bauen mit der Arduino IDE
 - Board-Paket: esp32 von Espressif, Version 3.x (getestet im CI mit 3.0.7)
-- Bibliotheken: Bolder Flight Systems SBUS 8.1.4, TinyGPSPlus 1.1.0 (ab v4.04)
+- Bibliotheken: Bolder Flight Systems SBUS 8.1.4, TinyGPSPlus 1.0.3 (ab v4.04)
 - Board: **ESP32C3 Dev Module** (C3 SuperMini) oder **ESP32S3 Dev Module** (S3-Zero). Das Board wird in `board_config.h` automatisch erkannt.
 - **USB CDC On Boot: Enabled** (sonst bricht der Build mit einer Meldung ab, UART0 wird fuer CRSF/SBUS gebraucht)
 - Partition Scheme: eines mit OTA, z.B. "Default 4MB with spiffs"
