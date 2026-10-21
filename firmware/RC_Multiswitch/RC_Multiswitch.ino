@@ -1,5 +1,5 @@
 /*
-    RC-Multiswitch  v4.02  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
+    RC-Multiswitch  v4.03  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
    v4.00 abgezweigt von ESP32-MultiSwitch v3.12 (Repo ESP32-Multiswitch-
    CRSF-bidirektional, MultiSwitch_ESP32_V3). Gleicher Quellcode fuer beide
    Platinen, Board-Auswahl in board_config.h.
@@ -31,6 +31,14 @@
    3 = HoTT           (SBUS)
    4 = CRSF           (ExpressLRS / TBS CrossFire, bidirektional)
  Lua-Konfiguration und (ab Schritt 3) Modulkette gibt es nur bei CRSF.
+
+ ÄNDERUNGEN v4.03:
+   - FIX: SBUS-Zeitlimit. Kommen 10 s lang gar keine SBUS-Frames mehr
+     (Stecker ab, Empfaenger ohne Strom), gilt das Signal als weg: BUS_OK
+     wird false, die Ausgaenge gehen aus und das WLAN-Auto-Failsafe kann
+     greifen. Vorher wurde BUS_OK nur ueber das Failsafe-Bit des
+     Empfaengers geloescht, ohne Frames blieb der letzte Zustand stehen.
+     Siehe checkSbusTimeout().
 
  ÄNDERUNGEN v4.02:
    - FIX: CRSF-Link-Statistik (Frame 0x14) wurde um ein Byte verschoben
@@ -224,7 +232,7 @@
 #include "crsf_esp32.h"
 #include "blink_presets.h"
 
-constexpr uint16_t Version = 402; // 4.02 - CRSF Parameter Version Number
+constexpr uint16_t Version = 403; // 4.03 - CRSF Parameter Version Number
 
 // ======== SBUS-Schwellen (benannte Konstanten) ==================
 static constexpr uint16_t SBUS_LOW_THRESHOLD  =  800;
@@ -588,6 +596,17 @@ static void checkCrsfTimeout() {
     }
 }
 
+// ======== SBUS-Zeitlimit (NEU v4.03) ============================
+// Ohne SBUS-Frames (nicht nur Failsafe-Bit) gilt das Signal nach 10 s als
+// weg. lastSbusFrameMs wird beim Empfang jedes Frames gesetzt (loop()).
+static constexpr unsigned long SBUS_TIMEOUT_MS = 10000;
+static void checkSbusTimeout() {
+    if (RC_System_boot == 4) return;
+    if (lastSbusFrameMs == 0 || millis() - lastSbusFrameMs > SBUS_TIMEOUT_MS) {
+        BUS_OK = false;
+    }
+}
+
 // ======== MultiSwitch-Decoder ===================================
 static uint8_t compressSwitches(uint16_t state) {
     uint8_t result = 0;
@@ -814,7 +833,7 @@ static void crsfSendParam(uint8_t idx) {
         crsf.send_param_response_CRSF_FOLDER(0, 0, "",
             {1,2,5,14,23,32,41,50,59,68,77});
     } else if (idx == 1) {
-        crsf.send_param_response_CRSF_INFO(1, 0, "Version", "v4.02 " BOARD_NAME);
+        crsf.send_param_response_CRSF_INFO(1, 0, "Version", "v4.03 " BOARD_NAME);
     } else if (idx == 2) {
         crsf.send_param_response_CRSF_FOLDER(2, 0, "Global", {3,4});
     } else if (idx == 3) {
@@ -1326,6 +1345,7 @@ void loop() {
             }
             Data = einkanal_Data;
         }
+        checkSbusTimeout();   // v4.03
     }
 
     Output(Data);

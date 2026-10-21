@@ -45,7 +45,7 @@ Board: Waveshare ESP32-S3-Zero
 - Empfehlung LED-Vorwiderstaende R1-R8 bei 3,3 V (ca. 5 mA, auch auf der Platine aufgedruckt): Rot/Gelb 270 R, Gruen 220 R, Blau/Weiss 56 R.
 - Footprint ESP32-S3-Zero_THT: 2x9, 2,54 mm, Reihenabstand 15,24 mm. Vor dem Layout 1:1 am echten Board pruefen.
 
-## Firmware (v4.02)
+## Firmware (v4.03)
 - Arduino-Sketch `firmware/RC_Multiswitch`, gleicher Quellcode fuer C3 und S3 (Board wird automatisch erkannt). Basis: MultiSwitch_ESP32_V3 v3.12.
 - CRSF auf UART A, wahlweise SBUS. Modulkette ueber UART B (und UART C beim S3): jedes Modul mit eigener Adresse ist ueber Lua einzeln einstellbar.
 - BOOT-Taster 3 s: WLAN-AP ein/aus. Status-LED nur beim S3.
@@ -53,12 +53,12 @@ Board: Waveshare ESP32-S3-Zero
 
 ## Ordner
 - `hardware/`: KiCad-Projekt (Schaltplan, PCB, PDF, eigene Footprints, fp-lib-table). Entwurfsnotizen in [hardware/README-hardware.md](hardware/README-hardware.md).
-- `firmware/`: Firmware v4.02 (Arduino-Sketch).
+- `firmware/`: Firmware v4.03 (Arduino-Sketch).
 - `docs/`: Projektbeschreibung, Hardware-Beschreibung und Firmware-Spezifikation.
 
 ## Stand
 - Hardware: Schaltplan fertig, PCB vom C3 uebernommen und an U1 neu verlegt. DRC in KiCad steht noch aus, J6 nur vorlaeufig platziert.
-- Firmware: v4.02 kompiliert fuer C3 und S3, noch nicht auf Hardware getestet.
+- Firmware: v4.03 kompiliert fuer C3 und S3, noch nicht auf Hardware getestet.
 
 ## Offene Punkte
 - DRC in KiCad ausfuehren (an U1 sind laut PCB-Datei alle Anschluesse verlegt)
