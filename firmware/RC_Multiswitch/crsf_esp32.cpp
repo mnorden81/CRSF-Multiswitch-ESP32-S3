@@ -130,15 +130,19 @@ void CRSF::updateChannels() {
 }
 
 void CRSF::updateLink_Statistics() {
+    // v4.02 FIX: Reihenfolge laut CRSF-Spezifikation (Frame 0x14). Vorher
+    // fehlte RSSI Antenne 2, dadurch waren alle Felder ab LQ um ein Byte
+    // verschoben (uplinkLQ war in Wahrheit RSSI Antenne 2).
     linkStats.uplinkRSSI     = crfs_buffer[3];
-    linkStats.uplinkLQ       = crfs_buffer[4];
-    linkStats.uplinkSNR      = (int8_t)crfs_buffer[5];
-    linkStats.activeAntenna  = crfs_buffer[6];
-    linkStats.rfMode         = crfs_buffer[7];
-    linkStats.txPower        = crfs_buffer[8];
-    linkStats.downlinkRSSI   = crfs_buffer[9];
-    linkStats.downlinkLQ     = crfs_buffer[10];
-    linkStats.downlinkSNR    = (int8_t)crfs_buffer[11];
+    linkStats.uplinkRSSI2    = crfs_buffer[4];
+    linkStats.uplinkLQ       = crfs_buffer[5];
+    linkStats.uplinkSNR      = (int8_t)crfs_buffer[6];
+    linkStats.activeAntenna  = crfs_buffer[7];
+    linkStats.rfMode         = crfs_buffer[8];
+    linkStats.txPower        = crfs_buffer[9];
+    linkStats.downlinkRSSI   = crfs_buffer[10];
+    linkStats.downlinkLQ     = crfs_buffer[11];
+    linkStats.downlinkSNR    = (int8_t)crfs_buffer[12];
     linkStats.lastUpdate     = millis();
 
 /*

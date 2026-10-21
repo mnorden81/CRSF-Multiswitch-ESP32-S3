@@ -1,5 +1,5 @@
 /*
-    RC-Multiswitch  v4.01  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
+    RC-Multiswitch  v4.02  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
    v4.00 abgezweigt von ESP32-MultiSwitch v3.12 (Repo ESP32-Multiswitch-
    CRSF-bidirektional, MultiSwitch_ESP32_V3). Gleicher Quellcode fuer beide
    Platinen, Board-Auswahl in board_config.h.
@@ -31,6 +31,13 @@
    3 = HoTT           (SBUS)
    4 = CRSF           (ExpressLRS / TBS CrossFire, bidirektional)
  Lua-Konfiguration und (ab Schritt 3) Modulkette gibt es nur bei CRSF.
+
+ ÄNDERUNGEN v4.02:
+   - FIX: CRSF-Link-Statistik (Frame 0x14) wurde um ein Byte verschoben
+     gelesen - das Feld RSSI Antenne 2 fehlte. uplinkLQ war damit in
+     Wahrheit RSSI Antenne 2, die Status-LED zeigte bei Empfaengern mit
+     einer Antenne faelschlich "schnell" (kein RC-Link). Jetzt laut
+     CRSF-Spezifikation (crsf_esp32.cpp updateLink_Statistics()).
 
  ÄNDERUNGEN v4.01 (Schritt 2 und 3 der Firmware-Spezifikation):
    - NEU: BOOT-Taster (C3 IO9, S3 IO0) lang druecken (>= 3 s) schaltet den
@@ -217,7 +224,7 @@
 #include "crsf_esp32.h"
 #include "blink_presets.h"
 
-constexpr uint16_t Version = 401; // 4.01 - CRSF Parameter Version Number
+constexpr uint16_t Version = 402; // 4.02 - CRSF Parameter Version Number
 
 // ======== SBUS-Schwellen (benannte Konstanten) ==================
 static constexpr uint16_t SBUS_LOW_THRESHOLD  =  800;
@@ -807,7 +814,7 @@ static void crsfSendParam(uint8_t idx) {
         crsf.send_param_response_CRSF_FOLDER(0, 0, "",
             {1,2,5,14,23,32,41,50,59,68,77});
     } else if (idx == 1) {
-        crsf.send_param_response_CRSF_INFO(1, 0, "Version", "v4.01 " BOARD_NAME);
+        crsf.send_param_response_CRSF_INFO(1, 0, "Version", "v4.02 " BOARD_NAME);
     } else if (idx == 2) {
         crsf.send_param_response_CRSF_FOLDER(2, 0, "Global", {3,4});
     } else if (idx == 3) {
