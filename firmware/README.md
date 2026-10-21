@@ -1,10 +1,10 @@
-# Firmware RC-Multiswitch v4.04
+# Firmware RC-Multiswitch v4.05
 
 Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis ist MultiSwitch_ESP32_V3 v3.12. Spezifikation: `docs/Firmware-Spezifikation.md`.
 
 ## Bauen mit der Arduino IDE
 - Board-Paket: esp32 von Espressif, Version 3.x (getestet im CI mit 3.0.7)
-- Bibliotheken: Bolder Flight Systems SBUS 8.1.4, TinyGPSPlus 1.0.3 (ab v4.04)
+- Bibliotheken: Bolder Flight Systems SBUS 8.1.4, TinyGPSPlus 1.0.3 (ab v4.04). Alles andere liegt im Sketch unter `src/RC_Common/` (ab v4.05, gemeinsame Basis aller ESP32-Module, siehe `src/RC_Common/README.md`)
 - Board: **ESP32C3 Dev Module** (C3 SuperMini) oder **ESP32S3 Dev Module** (S3-Zero). Das Board wird in `board_config.h` automatisch erkannt.
 - **USB CDC On Boot: Enabled** (sonst bricht der Build mit einer Meldung ab, UART0 wird fuer CRSF/SBUS gebraucht)
 - Partition Scheme: eines mit OTA, z.B. "Default 4MB with spiffs"
@@ -14,7 +14,7 @@ Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis is
 - Alle Funktionen der V3 (Konfig 1/2/3 je Ausgang, MKan1/MKan2, Web-UI, Lua, Failsafe, NVS, OTA, JSON-Export/-Import).
 - UART A (CN1): CRSF (RC-System 4) oder SBUS (RC-System 0-3) vom Empfaenger.
 - C3: Ausgang 7/8 nur digital (an ab 50 %), Ausgang 1-6 PWM. S3: alle 8 PWM.
-- **UART B/C mit waehlbarer Rolle (ab v4.04):** UART B (C3 und S3) und UART C (nur S3) koennen im Lua-Menue (Ordner "UART B/C") oder in der Web-UI (RC-Tab) auf Aus, CRSF, S.Port oder GPS gestellt werden, wie beim Soundmodul. Wirkt nach einem Neustart. Werkseinstellung: CRSF auf beiden.
+- **UART B/C mit waehlbarer Rolle (ab v4.04):** UART B (C3 und S3) und UART C (nur S3) koennen im Lua-Menue (Ordner "UART B/C") oder in der Web-UI (RC-Tab) auf Aus, CRSF, S.Port, GPS oder Raw (ab v4.05) gestellt werden, wie beim Soundmodul. Ab v4.05 hat jeder UART eine eigene Baudrate (Lua-Felder 84/85, vorher 84 = GPS-Baudrate); beim Wechsel der Rolle wird die passende Baudrate gesetzt. Wirkt nach einem Neustart. Werkseinstellung: CRSF auf beiden.
   - CRSF: Modulkette zum naechsten Modul (siehe unten), nur bei RC-System CRSF.
   - S.Port: bis zu 2 FrSky FLVSS/MLVSS LiPo-Sensoren (Poll-ID 0xA1 und 0x22), Anschluss TX ueber Diode 1N4148 und RX zusammen an die Signalleitung (siehe `sport_lipo.h`).
   - GPS: NMEA-Empfaenger (z. B. ATGM336H), Baudrate 9600-115200 waehlbar.
@@ -32,7 +32,7 @@ Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis is
 - Frames gehen ganz und unveraendert weiter (CRC geprueft). Je Port eine Warteschlange mit 8 Frames; bei Ueberlauf werden zuerst alte RC-Kanal-Frames verworfen.
 
 ## Stand
-- v4.04 kompiliert fuer C3 und S3 (CI). v4.02: CRSF-Link-Statistik (LQ) korrigiert. v4.03: SBUS-Zeitlimit 10 s (ohne Frames gehen die Ausgaenge aus). v4.04: Rolle von UART B/C waehlbar (CRSF, S.Port, GPS). Noch nicht auf Hardware getestet.
+- v4.04 kompiliert fuer C3 und S3 (CI). v4.02: CRSF-Link-Statistik (LQ) korrigiert. v4.03: SBUS-Zeitlimit 10 s (ohne Frames gehen die Ausgaenge aus). v4.04: Rolle von UART B/C waehlbar (CRSF, S.Port, GPS). v4.05: gemeinsame Basis RC_Common (CRSF-Bibliothek 1.1.0 mit korrekter Command-CRC, Lua-Menue als Tabelle, gemeinsame NVS-Schluessel mit Uebernahme der alten Werte, Baudrate je UART, Rolle Raw). Noch nicht auf Hardware getestet.
 - Offen: Abnahmetest nach Kapitel 8 der Spezifikation (1, 2 und 3 Module).
 
 ## Bekanntes Risiko C3: IO2 (Ausgang 3) ist ein Strapping-Pin

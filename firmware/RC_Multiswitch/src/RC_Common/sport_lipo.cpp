@@ -1,6 +1,5 @@
 /*
- * sport_lipo.cpp  –  RC-Multiswitch v4.04 (Rolle "S.Port" auf UART B/C,
- * uebernommen aus dem Soundmodul Mini / ESP32-RC-Sound v7)
+ * sport_lipo.cpp  –  RC_Common (Rolle "S.Port", aus ESP32-RC-Sound v7)
  *
  * S.Port Master: ESP32 pollt FrSky FLVSS/MLVSS Sensoren und parst
  * Einzelzell-Spannungen. Automatische Erkennung der Zellanzahl (1–6S).
@@ -23,20 +22,22 @@
  *   value = (0) | (762 << 4) | (4 << 15) | (764 << 18)
  */
 
+#ifdef ARDUINO   // nur Firmware, nicht in den Host-Tests
 #include "sport_lipo.h"
-#include "crsf_esp32.h"
+#include "CRSF_ESP32/crsf_esp32.h"
 
-// Poll-IDs der beiden Sensoren (RC_Multiswitch.ino, NVS "spid0"/"spid1")
-extern uint8_t g_sport_poll_id[2];
+// Poll-IDs: Werkseinstellung, oder die des Projekts (sportLipoUsePollIds())
+static const uint8_t SPORT_DEFAULT_POLL_IDS[2] = {0xA1, 0x22};
+static const uint8_t* sportPollIds = SPORT_DEFAULT_POLL_IDS;
+void sportLipoUsePollIds(const uint8_t* ids2) { sportPollIds = ids2 ? ids2 : SPORT_DEFAULT_POLL_IDS; }
 
 // Zugriff auf den CRSF-Instanz aus dem Hauptsketch
-extern CRSF crsf;
 
 // ── Globale Sensor-Daten ──────────────────────────────────────────────
 LipoSensorData lipoSensor[SPORT_NUM_SENSORS] = {};
 
 // ── UART-Instanz ──────────────────────────────────────────────────────
-// UART B oder C, uebergeben von startPort() in RC_Multiswitch.ino.
+// Der UART kommt vom Projekt (uartPortsBegin(), siehe uart_ports.h).
 static HardwareSerial* sportSerialPtr = nullptr;
 
 // ── State-Machine ─────────────────────────────────────────────────────
@@ -183,8 +184,8 @@ static void sportProcessByte(uint8_t b) {
                 // A1 -> Sensor 0 (Pack 1), 22 -> Sensor 1 (Pack 2).
                 // Faellt auf pollSensor zurueck, falls ID unbekannt.
                 uint8_t sIdx = pollSensor;
-                if (lastPollId == g_sport_poll_id[0])      sIdx = 0;
-                else if (lastPollId == g_sport_poll_id[1]) sIdx = 1;
+                if (lastPollId == sportPollIds[0])      sIdx = 0;
+                else if (lastPollId == sportPollIds[1]) sIdx = 1;
                 if (sIdx >= SPORT_NUM_SENSORS) sIdx = 0;
 
 #if SPORT_DEBUG_RAW
@@ -226,7 +227,7 @@ static void sportProcessByte(uint8_t b) {
 }
 
 // ── Initialisierung ───────────────────────────────────────────────────
-// serial/rxPin/txPin/baud kommen von startPort() in RC_Multiswitch.ino.
+// serial/rxPin/txPin/baud kommen von uartPortsBegin() (uart_ports.h).
 void sportLipoInit(HardwareSerial* serial, uint8_t rxPin, uint8_t txPin, uint32_t baud) {
     sportSerialPtr = serial;
     sportSerialPtr->begin(baud, SERIAL_8N1, rxPin, txPin, true);
@@ -244,13 +245,12 @@ void sportLipoInit(HardwareSerial* serial, uint8_t rxPin, uint8_t txPin, uint32_
                   txPin, rxPin, (unsigned)baud);
 }
 
-// isActive(): true, sobald sportLipoInit() gelaufen ist (Abfrage
-// fuer Telemetrie und Web-UI).
+// isActive(): true, sobald sportLipoInit() gelaufen ist.
 bool sportLipoIsActive() { return sportSerialPtr != nullptr; }
 
 // ── Update (non-blocking, in loop() aufrufen) ─────────────────────────
 void sportLipoUpdate() {
-    // Schutz: ohne sportLipoInit() (kein Port auf S.Port) ist die UART nicht
+    // Schutz: ohne sportLipoInit() (kein Port mit Rolle S.Port) ist die UART nicht
     // initialisiert - ohne diesen Check gaebe es einen Null-Pointer-Zugriff.
     if (sportSerialPtr == nullptr) return;
     unsigned long now = millis();
@@ -319,7 +319,7 @@ void sportLipoUpdate() {
     // Anzahl aktiver (unterschiedlicher) Sensoren bestimmen:
     // Sind beide Poll-IDs identisch, ist nur Sensor 1 konfiguriert.
     uint8_t activeSensors = 1;
-    if (g_sport_poll_id[1] != g_sport_poll_id[0]) {
+    if (sportPollIds[1] != sportPollIds[0]) {
         activeSensors = SPORT_NUM_SENSORS;
     }
 
@@ -337,7 +337,7 @@ void sportLipoUpdate() {
 
         // 0x7E + Physical-ID senden → Sensor antwortet mit DATA_FRAME
         sportSerialPtr->write(SPORT_START_BYTE);
-        sportSerialPtr->write(g_sport_poll_id[pollSensor]);
+        sportSerialPtr->write(sportPollIds[pollSensor]);
         g_sportPollsSent++;
 
         // State-Machine für die erwartete Antwort vorbereiten
@@ -395,7 +395,7 @@ uint8_t sportCalcSoC(float minCell) {
  * Werte in mV (int32_t). EdgeTX erkennt diese nach "Sensor suchen"
  * als native Sensoren und zeigt sie als Widgets an.
  */
-void sportSendCellsTelemetry(uint8_t sensorIdx) {
+void sportSendCellsTelemetry(CRSF& crsf, uint8_t sensorIdx) {
     if (sensorIdx >= SPORT_NUM_SENSORS) return;
     const LipoSensorData& s = lipoSensor[sensorIdx];
     if (!s.online || s.cellCount == 0) return;
@@ -424,3 +424,5 @@ uint32_t sportGetValidFrames()     { return g_sportValidFrames; }
 uint32_t sportGetCrcErrors()       { return g_sportCrcErrors; }
 uint32_t sportGetNoResponseCount() { return g_sportNoResponseCount; }
 uint8_t  sportGetLastPollId()      { return lastPollId; }
+
+#endif // ARDUINO

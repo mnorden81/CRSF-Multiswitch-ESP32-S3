@@ -1,15 +1,15 @@
 /*
- * gps_speed.cpp  –  RC-Multiswitch v4.04 (Rolle "GPS" auf UART B/C,
- * uebernommen aus dem Soundmodul Mini / ESP32-RC-Sound v7)
+ * gps_speed.cpp  –  RC_Common (aus ESP32-RC-Sound v7)
  *
- * Siehe gps_speed.h. Liest ein NMEA-GPS über einen Hardware-UART (UART B
- * oder C, Rolle "GPS") und wertet es mit TinyGPS++ aus. Die Ground Speed kommt direkt
+ * Siehe gps_speed.h. Liest ein NMEA-GPS über einen UART (Rolle "GPS")
+ * und wertet es mit TinyGPS++ aus. Die Ground Speed kommt direkt
  * aus dem GPS und muss auf dem Modul nicht berechnet werden.
  *
  * Nach dem Boot wird das GPS einmalig per CASIC-Kommando konfiguriert
  * (Updaterate + reduzierte NMEA-Ausgabe), damit die höhere Rate zuverlässig
  * durch die 9600-Baud-Leitung passt.
  */
+#ifdef ARDUINO   // nur Firmware, nicht in den Host-Tests
 #include "gps_speed.h"
 #include <TinyGPS++.h>
 
@@ -18,8 +18,8 @@
 #define GPS_CFG_DELAY  800    // ms nach Init warten, bevor die Konfig gesendet wird
 
 // ── interner Zustand ───────────────────────────────────────────────────────
-// Der UART kommt aus der Port-Rollen-Auswahl (startPort() in RC_Multiswitch.ino).
-static HardwareSerial* gpsSerial = nullptr;
+// UART (oder SoftwareSerial) kommt vom Projekt, siehe uart_ports.cpp.
+static Stream*         gpsSerial = nullptr;
 static TinyGPSPlus     gps;
 
 static float    speedKmh    = 0.0f;
@@ -56,11 +56,17 @@ static void gpsSendConfig() {
 // ── Initialisierung ────────────────────────────────────────────────────────
 void gpsSpeedInit(HardwareSerial* serial, uint8_t rxPin, uint8_t txPin, uint32_t baud) {
     // RX liest NMEA, TX sendet die Konfiguration an das GPS.
+    serial->begin(baud, SERIAL_8N1, rxPin, txPin);
     gpsSerial = serial;
-    gpsSerial->begin(baud, SERIAL_8N1, rxPin, txPin);
     initMs  = millis();
     cfgSent = false;
     Serial.printf("[GPS] Init: RX=GPIO%d TX=GPIO%d  %u Baud\n", rxPin, txPin, (unsigned)baud);
+}
+
+void gpsSpeedInitStream(Stream* stream) {
+    gpsSerial = stream;
+    initMs  = millis();
+    cfgSent = false;
 }
 
 bool gpsIsActive() { return gpsSerial != nullptr; }
@@ -110,3 +116,5 @@ int32_t  gpsGetLatE7()       { return latE7; }
 int32_t  gpsGetLonE7()       { return lonE7; }
 uint16_t gpsGetHeadingCdeg() { return headingCdeg; }
 uint16_t gpsGetAltMeters()   { return altMeters; }
+
+#endif // ARDUINO
