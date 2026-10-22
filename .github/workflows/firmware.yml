@@ -1,6 +1,6 @@
 name: Firmware bauen
 
-# Gemeinsame CI aller ESP32-Module (RC_Common 1.1.0): RC_Common-Kopie
+# Gemeinsame CI aller ESP32-Module (RC_Common 1.2.0): RC_Common-Kopie
 # pruefen, Host-Tests, Firmware mit festem Core bauen, App- und
 # Komplett-Image hochladen.
 on:
