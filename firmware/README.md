@@ -1,4 +1,4 @@
-# Firmware RC-Multiswitch v4.05
+# Firmware RC-Multiswitch v4.06
 
 Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis ist MultiSwitch_ESP32_V3 v3.12. Spezifikation: `docs/Firmware-Spezifikation.md`.
 
@@ -32,7 +32,7 @@ Arduino-Sketch in `RC_Multiswitch/`, gleicher Quellcode fuer C3 und S3. Basis is
 - Frames gehen ganz und unveraendert weiter (CRC geprueft). Je Port eine Warteschlange mit 8 Frames; bei Ueberlauf werden zuerst alte RC-Kanal-Frames verworfen.
 
 ## Stand
-- v4.04 kompiliert fuer C3 und S3 (CI). v4.02: CRSF-Link-Statistik (LQ) korrigiert. v4.03: SBUS-Zeitlimit 10 s (ohne Frames gehen die Ausgaenge aus). v4.04: Rolle von UART B/C waehlbar (CRSF, S.Port, GPS). v4.05: gemeinsame Basis RC_Common (CRSF-Bibliothek 1.1.0 mit korrekter Command-CRC, Lua-Menue als Tabelle, gemeinsame NVS-Schluessel mit Uebernahme der alten Werte, Baudrate je UART, Rolle Raw). Noch nicht auf Hardware getestet.
+- v4.04 kompiliert fuer C3 und S3 (CI). v4.02: CRSF-Link-Statistik (LQ) korrigiert. v4.03: SBUS-Zeitlimit 10 s (ohne Frames gehen die Ausgaenge aus). v4.04: Rolle von UART B/C waehlbar (CRSF, S.Port, GPS). v4.05: gemeinsame Basis RC_Common (CRSF-Bibliothek 1.1.0 mit korrekter Command-CRC, Lua-Menue als Tabelle, gemeinsame NVS-Schluessel mit Uebernahme der alten Werte, Baudrate je UART, Rolle Raw). v4.06: Einstellungs-Backup im Flash des Moduls (Web-UI, Karte „Konfiguration sichern“), automatisch vor Import und OTA (RC_Common 1.2.0, Partitionsschema mit SPIFFS). Noch nicht auf Hardware getestet.
 - Offen: Abnahmetest nach Kapitel 8 der Spezifikation (1, 2 und 3 Module).
 
 ## Bekanntes Risiko C3: IO2 (Ausgang 3) ist ein Strapping-Pin

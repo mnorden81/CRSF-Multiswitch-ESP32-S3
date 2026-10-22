@@ -1,5 +1,5 @@
 /*
-    RC-Multiswitch  v4.05  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
+    RC-Multiswitch  v4.06  (ESP32-C3 SuperMini / Waveshare ESP32-S3-Zero)
    v4.00 abgezweigt von ESP32-MultiSwitch v3.12 (Repo ESP32-Multiswitch-
    CRSF-bidirektional, MultiSwitch_ESP32_V3). Gleicher Quellcode fuer beide
    Platinen, Board-Auswahl in board_config.h.
@@ -31,6 +31,19 @@
    3 = HoTT           (SBUS)
    4 = CRSF           (ExpressLRS / TBS CrossFire, bidirektional)
  Lua-Konfiguration und (ab Schritt 3) Modulkette gibt es nur bei CRSF.
+
+ ÄNDERUNGEN v4.06 (RC_Common 1.2.0):
+   - NEU: Einstellungs-Backup im Flash des Moduls (Tab WLAN, Karte
+     "Konfiguration sichern"): "Im Modul sichern", Liste der Backups,
+     wiederherstellen und loeschen. Inhalt wie beim Export als Datei.
+     Gehalten werden die letzten 5 von Hand gesicherten Backups.
+   - NEU: Vor jedem Import (Datei oder Flash) und vor jedem
+     Firmware-Update per WLAN sichert die Weboberflaeche den aktuellen
+     Stand automatisch (die letzten 3 bleiben).
+   - Braucht ein Partitionsschema mit SPIFFS-Bereich ("Default 4MB with
+     spiffs", wie bisher empfohlen). Das Backup uebersteht Flashen aus der
+     IDE und OTA, nicht aber "Erase All Flash" oder ein anderes
+     Partitionsschema.
 
  ÄNDERUNGEN v4.05 (gemeinsame Basis RC_Common 1.1.0):
    - Gemeinsamer Code aller ESP32-Module liegt jetzt in src/RC_Common/
@@ -265,7 +278,7 @@
 /*
   Bolder Flight Systems SBUS  8.1.4   (für RC_System 0-3)
   TinyGPSPlus 1.0.3                   (v4.04: Rolle GPS auf UART B/C)
-  RC_Common 1.1.0 im Sketch-Ordner src/RC_Common/ (v4.05), enthaelt
+  RC_Common 1.2.0 im Sketch-Ordner src/RC_Common/ (ab v4.05), enthaelt
     CRSF_ESP32 1.1.0, Basis https://github.com/Ziege-One/CRSF_ESP32
 */
 
@@ -287,8 +300,9 @@
 #include "src/RC_Common/status_led.h"
 #include "src/RC_Common/wifi_failsafe.h"
 #include "src/RC_Common/web_common.h"
+#include "src/RC_Common/config_backup.h"   // v4.06
 
-constexpr uint16_t Version = 405; // 4.05 - CRSF Parameter Version Number
+constexpr uint16_t Version = 406; // 4.06 - CRSF Parameter Version Number
 
 // ======== SBUS-Schwellen (benannte Konstanten) ==================
 static constexpr uint16_t SBUS_LOW_THRESHOLD  =  800;
